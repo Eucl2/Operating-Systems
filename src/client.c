@@ -6,7 +6,7 @@
 #include <string.h>
 
 
-void uniexec(char arg[])
+void send_request(char arg[])
 {
     int fd_fifo;
 	if((fd_fifo = open("fifo", O_WRONLY))==-1) perror("Server offline");
@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
         {
             printf("Sem tempo a executar.\n"); exit(1);
         }
-        if(!atoi(argv[2])==0)// verifica se o time existe e se é int
+        if(argv[2])// verifica se o time existe. Adicionar verificação se é int
         {
 			if(argc==3) 
             {
@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
                 printf("Sem programa a executar.\n"); exit(1);
                }
                 //tem tudo , passa a executar aka inicio do fifo e conecçao ao servidor
-			    uniexec(argv[4]);// alterar nome 
+			    send_request(argv[4]);// alterar nome 
 			} 
             if(strcmp(argv[3],"-p")==0)
             {
@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 			   int i=0;
 			   char* token = strtok(argv[4],"|");
                while(token != NULL)
-               {
+                {
 				    progs[i] = token;
 				    token = strtok(NULL,"|");
 				    i++;
@@ -91,9 +91,12 @@ int main(int argc, char* argv[])
 
     int fd_fifo = open("fifo", O_WRONLY|O_CREAT);
 
-    if(fd_fifo < 0){
+    if(fd_fifo < 0)
+    {
         perror("open");
-    }else{
+    }
+    else
+    {
         printf("opened fifo for writing...\n");
     }
 
@@ -102,9 +105,12 @@ int main(int argc, char* argv[])
     //while((bytes_read = read(0, &buffer, MAX_LINE_SIZE))){
     int bytes_written = write(fd_fifo, argv[1], strlen(argv[1]));
 
-    if (bytes_written ==1){
+    if (bytes_written ==1)
+    {
         perror ("write");
-    }else{
+    }
+    else
+    {
         printf("written to fifo %d bytes", bytes_written);
     }
 
