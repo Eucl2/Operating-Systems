@@ -18,8 +18,6 @@ void send_request(char arg[])
 
 }
 
-
-
 int main(int argc, char* argv[])
 {
 
@@ -28,15 +26,17 @@ int main(int argc, char* argv[])
     // argumentos necessarios 
     if(argc==1)
     {
-        printf("Sem argumentos a executar pelo cliente.\n"); exit(1);
+        printf("Sem argumentos a executar pelo cliente.\n"); 
+        exit(1);
     }
     if(strcmp(argv[1],"execute")==0)
     {
         if(argc==2)
         {
-            printf("Sem tempo a executar.\n"); exit(1);
+            printf("Sem tempo a executar.\n"); 
+            exit(1);
         }
-        if(argv[2])// verifica se o time existe. Adicionar verificação se é int
+        if(argv[2])// verifica se o tempo existe. Adicionar verificação se é int/double
         {
 			if(argc==3) 
             {
@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
                 //tem tudo , passa a executar aka inicio do fifo e conecçao ao servidor
 			    send_request(argv[4]);// alterar nome 
 			} 
-            if(strcmp(argv[3],"-p")==0)
+            if(strcmp(argv[3],"-p")==0) //encadeamento de programas (>12)
             {
                 if(argc==4)
                {
@@ -67,26 +67,23 @@ int main(int argc, char* argv[])
 				    i++;
 			    }
                 //tem tudo , passa a executar
-			    multiexec(i,progs);// alterar nome 
+			    multiexec(i,progs);// alterar nome || Ou usar a send_request existente
 			}
         }
     }
     if(strcmp(argv[1],"status")==0)
     {
-        if((fd_fifo = open("fifo", O_WRONLY)) == -1) perror("Server offline");
-		
+        if((fd_fifo = open("fifo", O_WRONLY)) == -1)
+        {
+            perror("Server offline");
+        }
+            
 		int write_bytes = write(fd_fifo,argv[1],strlen(argv[1]));
 		close(fd_fifo);
 		
 		sleep(1);
 
-
-
     }
-			
-
-
-
 
 
     int fd_fifo = open("fifo", O_WRONLY|O_CREAT);

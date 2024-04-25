@@ -37,29 +37,33 @@ int main()
 
     int res = mkfifo("fifo", 0666);
 
-    if(res == -1){
+    if(res == -1)
+    {
         perror("mkfifo");
     }
 
     int fd_log = open("log.txt", O_CREAT| O_WRONLY| O_TRUNC);
-    if(fd_log==-1){
+    if(fd_log==-1)
+    {
         perror("fd_log");
     }
 
     while(1)
     {
         int fd_fifo = open("fifo", O_RDONLY);
-        int fd_fifo_write = open("fifo", O_WRONLY);//assim o feicheiro nunca fecha para a escrita, vai permanecer sempre aberto, e o servidor nunca morre
-        //se se fizer isto tem de se abrir o leitor primeiro, e só dpeois o de escrita, senão, dá deadlock
+        int fd_fifo_write = open("fifo", O_WRONLY);//assim o ficheiro nunca fecha para a escrita, vai permanecer sempre aberto, e o servidor nunca morre
+        //se se fizer isto tem de se abrir o leitor primeiro, e só depois o de escrita, senão, dá deadlock
 
         if(fd_fifo < 0)
         {
             perror("open");
-        }else
+        }
+        else
         {
             printf("opened fifo for reading..\n");
 
         }
+        
         int bytes_read=0;
         char buffer[MAX_LINE_SIZE];
 
