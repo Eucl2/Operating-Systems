@@ -1,118 +1,112 @@
 #include <unistd.h>
 #include <sys/wait.h>
-#include <sys/stat.h> //this one imp
+#include <sys/stat.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdlib.h>
 
+#define MAX_ARGS 20 //to review
+#define REQ_PIPE "client_to_orchestrator"
+#define RESP_PIPE "orchestrator_to_client"
 
-void send_request(char arg[])
+void send_request(char* command) 
 {
-    int fd_fifo;
-	if((fd_fifo = open("fifo", O_WRONLY))==-1) perror("Server offline");
-
-    // falta mandar para o servidor os argumentos e o cliente receber um PID para identificar
-    // comunica esse pid ao utilizador
-    //o programa cliente termina e o utilizador pode efetuar outras operaçoes
-    //mesmo sem terminadas
-
-}
-
-int main(int argc, char* argv[])
-{
-
-    int fd_fifo, fd_fifostatus;
-
-    // argumentos necessarios 
-    if(argc==1)
+    if (command != NULL) 
     {
-        printf("Sem argumentos a executar pelo cliente.\n"); 
+        printf("Hey from client! Sending: %s\n", command); //debugging
+    } 
+    else 
+    {
+        printf("Error: Command is NULL\n"); //debugging
+    }
+    int fd_req, fd_resp;
+    char task_id[100] = {0};
+
+    if ((fd_req = open(REQ_PIPE, O_WRONLY)) == -1) 
+    {
+        perror("Server offline - cannot open request pipe");
         exit(1);
     }
-    if(strcmp(argv[1],"execute")==0)
+
+    if (write(fd_req, command, strlen(command)) == -1) 
     {
-        if(argc==2)
+        perror("Write to server failed");
+        close(fd_req);
+        exit(1);
+    }
+    close(fd_req);
+
+    if ((fd_resp = open(RESP_PIPE, O_RDONLY)) == -1) 
+    {
+        perror("Server offline on read - cannot open response pipe");
+        exit(1);
+    }
+
+    // Read the task ID or status from the orchestrator
+    if (read(fd_resp, task_id, sizeof(task_id)) <= 0) 
+    {
+        perror("Read from server failed");
+    } 
+    else 
+    {
+        printf("Response from server: %s\n", task_id); //can we use printf here? if not, how to show to user the response(s)?
+    }
+    close(fd_resp);
+}
+
+int main(int argc, char* argv[]) 
+{
+    if (argc < 3 && strcmp(argv[1], "status") != 0) 
+    {
+        fprintf(stderr, "Usage: ./client <command> [<args>...]\n"); //DEBUG - FPRINTF isnt allowed - keep for debugging only
+        fprintf(stderr, "Commands: execute -u|-p <time> <command>\n");
+        fprintf(stderr, "          status\n");
+        fprintf(stderr, "Provided command: %s\n", argv[1]);
+        return 1;
+    }
+
+    char full_command[1024] = {0}; //review
+    if (strcmp(argv[1], "execute") == 0) 
+    {
+        if (argc < 5) 
         {
-            printf("Sem tempo a executar.\n"); 
-            exit(1);
+            fprintf(stderr, "Insufficient arguments for execute.\n");
+            return 1;
         }
-        if(argv[2])// verifica se o tempo existe. Adicionar verificação se é int/double
-        {
-			if(argc==3) 
-            {
-                printf("Sem argumento a executar.\n"); exit(1);
+
+        // Check if argv[2] (aka duration) is a valid integer - Useless?
+        for (char* p = argv[2]; *p; p++) {
+            if (!isdigit(*p)) {
+                fprintf(stderr, "Invalid duration: %s\n", argv[2]);
+                return 1;
             }
-            if(strcmp(argv[3],"-u")==0)
-            {
-               if(argc==4)
-               {
-                printf("Sem programa a executar.\n"); exit(1);
-               }
-                //tem tudo , passa a executar aka inicio do fifo e conecçao ao servidor
-			    send_request(argv[4]);// alterar nome 
-			} 
-            if(strcmp(argv[3],"-p")==0) //encadeamento de programas (>12)
-            {
-                if(argc==4)
-               {
-                printf("Sem programa a executar.\n"); exit(1);
-               }
-               char* progs[20];
-			   int i=0;
-			   char* token = strtok(argv[4],"|");
-               while(token != NULL)
-                {
-				    progs[i] = token;
-				    token = strtok(NULL,"|");
-				    i++;
-			    }
-                //tem tudo , passa a executar
-			    multiexec(i,progs);// alterar nome || Ou usar a send_request existente
-			}
         }
-    }
-    if(strcmp(argv[1],"status")==0)
-    {
-        if((fd_fifo = open("fifo", O_WRONLY)) == -1)
+
+        // Construct the full command to send to the server
+        strcat(full_command, "execute ");
+        strcat(full_command, argv[3]); // -u or -p
+        strcat(full_command, " ");
+        strcat(full_command, argv[2]); // duration
+        strcat(full_command, " ");
+
+        // Concatenate all program and args
+        for (int i = 4; i < argc; i++) 
         {
-            perror("Server offline");
+            strcat(full_command, argv[i]);
+            strcat(full_command, " ");
         }
-            
-		int write_bytes = write(fd_fifo,argv[1],strlen(argv[1]));
-		close(fd_fifo);
-		
-		sleep(1);
-
-    }
-
-
-    int fd_fifo = open("fifo", O_WRONLY|O_CREAT);
-
-    if(fd_fifo < 0)
+    } 
+    else if (strcmp(argv[1], "status") == 0) 
     {
-        perror("open");
-    }
-    else
+        strcpy(full_command, "status");
+    } 
+    else 
     {
-        printf("opened fifo for writing...\n");
+        fprintf(stderr, "Unknown command.\n");
+        return 1;
     }
 
-    int bytes_read=0;
-    //char buffer[MAX_LINE_SIZE];
-    //while((bytes_read = read(0, &buffer, MAX_LINE_SIZE))){
-    int bytes_written = write(fd_fifo, argv[1], strlen(argv[1]));
-
-    if (bytes_written ==1)
-    {
-        perror ("write");
-    }
-    else
-    {
-        printf("written to fifo %d bytes", bytes_written);
-    }
-
-    close(fd_fifo);
-    unlink("fifo");
-
+    send_request(full_command);
     return 0;
 }
