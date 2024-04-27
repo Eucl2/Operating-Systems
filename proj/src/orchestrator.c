@@ -69,7 +69,7 @@ void execute_task(Task *task)
         waitpid(pid, &status, 0);
         gettimeofday(&end_time, NULL); // End time
 
-        duration = (end_time.tv_sec - task->start_time.tv_sec) * 1000;
+        duration = (end_time.tv_sec - task->start_time.tv_sec) * 1000; //separated func maybe
         duration += (end_time.tv_usec - task->start_time.tv_usec) / 1000;
 
         log_task(task, duration); // Log the task with execution time
@@ -81,27 +81,44 @@ void execute_task(Task *task)
     }
 }
 
-void handle_requests() 
-{
+void handle_requests() {
     int req_fd = open(REQ_PIPE, O_RDONLY);
     char command[256];
 
-    while (read(req_fd, command, sizeof(command)) > 0) 
-    {
+    while (read(req_fd, command, sizeof(command)) > 0) {
         printf("Received command: %s\n", command);
+        char *token = strtok(command, " ");
+        if (strcmp(token, "execute") == 0) {
+            Task *new_task = malloc(sizeof(Task));
+            new_task->id = taskCounter++;
 
-        Task *new_task = malloc(sizeof(Task));
-        new_task->id = taskCounter++;
-        strcpy(new_task->command, command);
-        strcpy(new_task->status, "waiting");
-        new_task->next = head;
-        head = new_task;
+            // Skip 'execute' and scheduling flags
+            token = strtok(NULL, " "); // Skip 'execute'
+            token = strtok(NULL, " "); // Skip '-u' or '-p'
+            token = strtok(NULL, " "); // Skip duration
 
-        execute_task(new_task);
+            // Start constructing the command to be executed
+            strcpy(new_task->command, "");
+
+            while (token != NULL) {
+                strcat(new_task->command, token);
+                strcat(new_task->command, " ");
+                token = strtok(NULL, " ");
+            }
+
+            strcpy(new_task->status, "waiting");
+            new_task->next = head;
+            head = new_task;
+
+            execute_task(new_task);
+        } else if (strcmp(token, "status") == 0) {
+            printf("Status not handled yet");
+        }
     }
 
     close(req_fd);
 }
+
 
 int main() 
 {
