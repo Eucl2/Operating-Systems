@@ -81,14 +81,17 @@ void execute_task(Task *task)
     }
 }
 
-void handle_requests() {
+void handle_requests() 
+{
     int req_fd = open(REQ_PIPE, O_RDONLY);
     char command[256];
 
-    while (read(req_fd, command, sizeof(command)) > 0) {
+    while (read(req_fd, command, sizeof(command)) > 0) 
+    {
         printf("Received command: %s\n", command);
         char *token = strtok(command, " ");
-        if (strcmp(token, "execute") == 0) {
+        if (strcmp(token, "execute") == 0) 
+        {
             Task *new_task = malloc(sizeof(Task));
             new_task->id = taskCounter++;
 
@@ -100,7 +103,8 @@ void handle_requests() {
             // Start constructing the command to be executed
             strcpy(new_task->command, "");
 
-            while (token != NULL) {
+            while (token != NULL) 
+            {
                 strcat(new_task->command, token);
                 strcat(new_task->command, " ");
                 token = strtok(NULL, " ");
@@ -111,13 +115,66 @@ void handle_requests() {
             head = new_task;
 
             execute_task(new_task);
-        } else if (strcmp(token, "status") == 0) {
-            printf("Status not handled yet");
+        } 
+        else if (strcmp(token, "status") == 0) 
+        {
+            int resp_fd = open(RESP_PIPE, O_WRONLY);
+            
+            if (resp_fd == -1) 
+            {
+                perror("Error opening response pipe");
+                exit(1);
+            }
+
+            write_status(resp_fd);
+            close(resp_fd); //fechar no final
         }
     }
 
     close(req_fd);
 }
+
+#include <string.h>
+#include <unistd.h>
+
+void write_status(int fd) {
+    Task *current = head;
+    char line[256]; // Buffer para linhas individuais
+    int len; // Comprimento da string para enviar
+
+    // Escrever cabeçalhos de cada parte
+    write(fd, "Executing\n", strlen("Executing\n"));
+    for (current = head; current != NULL; current = current->next) {
+        if (strcmp(current->status, "executing") == 0) {
+            len = snprintf(line, sizeof(line), "%d %s\n", current->id, current->command);
+            write(fd, line, len);
+        }
+    }
+
+    write(fd, "Scheduled\n", strlen("Scheduled\n"));
+    for (current = head; current != NULL; current = current->next) {
+        if (strcmp(current->status, "waiting") == 0) {
+            len = snprintf(line, sizeof(line), "%d %s\n", current->id, current->command);
+            write(fd, line, len);
+        }
+    }
+
+    write(fd, "Completed\n", strlen("Completed\n"));
+    for (current = head; current != NULL; current = current->next) 
+    {
+        if (strcmp(current->status, "completed") == 0) 
+        {
+            //deveria mostrar o tempo que demorrou a executar, teremos que guardá-lo na struct. Por agora fica o start time
+            len = snprintf(line, sizeof(line), "%d %s %ld ms\n", current->id, current->command, current->start_time);
+            write(fd, line, len);
+        }
+    }
+
+    // Indicar fim da transmissão -alterar?
+    write(fd, "END\n", strlen("END\n"));
+}
+
+
 
 
 int main() 

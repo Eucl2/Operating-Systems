@@ -14,13 +14,13 @@ void send_request(char* command)
 {
     if (command != NULL) 
     {
-        printf("Hey from client! Sending: %s\n", command); //debugging
+        printf("Sending [ %s ] request to orchestrator... \n", command); //debugging
     } 
     else 
     {
         printf("Error: Command is NULL\n"); //debugging
     }
-    int fd_req, fd_resp;
+    int fd_req;
     char task_id[100] = {0};
 
     if ((fd_req = open(REQ_PIPE, O_WRONLY)) == -1) 
@@ -37,29 +37,57 @@ void send_request(char* command)
     }
     close(fd_req);
 
-    if ((fd_resp = open(RESP_PIPE, O_RDONLY)) == -1) 
+    //missing: reading the id da tarefa vinda do orchestrator
+}
+
+void read_status() 
+{
+    printf("Reading status from orchestrator...\n"); //debuging
+    int fd_resp = open(RESP_PIPE, O_RDONLY);
+    
+    if (fd_resp == -1) 
     {
         perror("Server offline on read - cannot open response pipe");
         exit(1);
     }
 
-    // Read the task ID or status from the orchestrator
-    if (read(fd_resp, task_id, sizeof(task_id)) <= 0) 
+    char response[1024];
+    // Ler a resposta até encontrar "END"
+    while (1) 
     {
-        perror("Read from server failed");
-    } 
-    else 
-    {
-        printf("Response from server: %s\n", task_id); //can we use printf here? if not, how to show to user the response(s)?
+        printf("Starting to read after opening pipe...\n"); //debuging
+        ssize_t count = read(fd_resp, response, sizeof(response) - 1);
+        if (count > 0) 
+        {
+            printf("counting...\n"); //debugging
+            response[count] = '\0';  // Garantir terminação da string
+            if (strstr(response, "END")) //é permitido usar strstr? 
+            {
+                break;  // Sair do loop quando "END" for recebido
+            }
+            printf("response:\n%s", response);  // Mostrar resposta
+        } 
+        else if (count == 0) 
+        {
+            printf("pipe was closed :( )"); //debugging
+            break;
+        } 
+        else 
+        {
+            // Erro de leitura
+            perror("Read from server failed");
+            break;
+        }
     }
     close(fd_resp);
 }
+
 
 int main(int argc, char* argv[]) 
 {
     if (argc < 3 && strcmp(argv[1], "status") != 0) 
     {
-        fprintf(stderr, "Usage: ./client <command> [<args>...]\n"); //DEBUG - FPRINTF isnt allowed - keep for debugging only
+        fprintf(stderr, "Usage: ./client <command> [<args>...]\n"); //DEBUG - FPRINTF isnt allowed, i think - keep for debugging only
         fprintf(stderr, "Commands: execute -u|-p <time> <command>\n");
         fprintf(stderr, "          status\n");
         fprintf(stderr, "Provided command: %s\n", argv[1]);
@@ -96,10 +124,15 @@ int main(int argc, char* argv[])
             strcat(full_command, argv[i]);
             strcat(full_command, " ");
         }
+
+    send_request(full_command); //send exec request
+
     } 
+
     else if (strcmp(argv[1], "status") == 0) 
     {
-        strcpy(full_command, "status");
+        send_request("status");
+        read_status();
     } 
     else 
     {
@@ -107,6 +140,5 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    send_request(full_command);
     return 0;
 }
