@@ -1,85 +1,115 @@
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-#include <sys/stat.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/wait.h>
 
-#define MAX_LINE_SIZE 1000
+#define REQ_PIPE "client_to_orchestrator"
+#define RESP_PIPE "orchestrator_to_client"
+#define LOG_FILE "completed_tasks.log"
 
+typedef struct task {
+    int id;
+    char command[256];
+    char status[20];  // "waiting", "executing", "completed"
+    struct timeval start_time;
+    struct task* next;
+} Task;
 
-ssize_t readln (int fd, char* line, size_t size)
+Task* head = NULL;  // Head of the linked list for task queue
+int taskCounter = 1;  // Task ID counter
+
+void setup_pipes() 
 {
-
-	int read_bytes = 0, pos = 0;
-	
-	while(pos < size && read(fd, line+pos, 1)>0)
-    {
-		read_bytes++;
-		if(line[pos]=='\n'){
-			break;
-		}							
-		pos++;
-	}
-	return read_bytes;
+    mkfifo(REQ_PIPE, 0666);
+    mkfifo(RESP_PIPE, 0666);
 }
 
-void status()
+void log_task(Task *task, long duration) 
 {
-
+    int fd = open(LOG_FILE, O_WRONLY | O_CREAT | O_APPEND, 0666);
+    if (fd == -1) {
+        perror("Failed to open log file");
+        return;
+    }
+    dprintf(fd, "Task ID %d completed. Command: %s, Execution Time: %ld ms\n", task->id, task->command, duration);
+    close(fd);
 }
 
-int main()
+void update_task_status(Task *task, const char* status) 
 {
+    strcpy(task->status, status);
+}
 
-    int res = mkfifo("fifo", 0666);
+void execute_task(Task *task) 
+{
+    printf("Task to execute: %s\n", task->command); //debugging
+    if (task == NULL) return;
+    struct timeval end_time;
+    long duration;
 
-    if(res == -1)
+    gettimeofday(&task->start_time, NULL); // Start time
+    update_task_status(task, "executing");
+
+    int pid = fork();
+    if (pid == 0) 
+    { 
+        // Child process
+        execlp("/bin/sh", "sh", "-c", task->command, NULL);
+        exit(EXIT_FAILURE);
+    } 
+    else if (pid > 0) 
+    { 
+        // Parent process
+        int status;
+        waitpid(pid, &status, 0);
+        gettimeofday(&end_time, NULL); // End time
+
+        duration = (end_time.tv_sec - task->start_time.tv_sec) * 1000;
+        duration += (end_time.tv_usec - task->start_time.tv_usec) / 1000;
+
+        log_task(task, duration); // Log the task with execution time
+        update_task_status(task, "completed");
+    } 
+    else 
     {
-        perror("mkfifo");
+        perror("Failed to fork");
+    }
+}
+
+void handle_requests() 
+{
+    int req_fd = open(REQ_PIPE, O_RDONLY);
+    char command[256];
+
+    while (read(req_fd, command, sizeof(command)) > 0) 
+    {
+        printf("Received command: %s\n", command);
+
+        Task *new_task = malloc(sizeof(Task));
+        new_task->id = taskCounter++;
+        strcpy(new_task->command, command);
+        strcpy(new_task->status, "waiting");
+        new_task->next = head;
+        head = new_task;
+
+        execute_task(new_task);
     }
 
-    int fd_log = open("log.txt", O_CREAT| O_WRONLY| O_TRUNC);
-    if(fd_log==-1)
-    {
-        perror("fd_log");
-    }
+    close(req_fd);
+}
 
-    while(1)
-    {
-        int fd_fifo = open("fifo", O_RDONLY);
-        int fd_fifo_write = open("fifo", O_WRONLY);//assim o ficheiro nunca fecha para a escrita, vai permanecer sempre aberto, e o servidor nunca morre
-        //se se fizer isto tem de se abrir o leitor primeiro, e só depois o de escrita, senão, dá deadlock
-
-        if(fd_fifo < 0)
-        {
-            perror("open");
-        }
-        else
-        {
-            printf("opened fifo for reading..\n");
-
-        }
-        
-        int bytes_read=0;
-        char buffer[MAX_LINE_SIZE];
-
-        while((bytes_read = read(fd_fifo, &buffer, MAX_LINE_SIZE))>0)
-        {
-            buffer[bytes_read] = '\0';
-            int bytes_write = write(fd_log, &buffer, bytes_read+1);//tem de ser +1 por causa de se ter adicionado o '\0'
-        }
-
-        close(fd_fifo);
-        unlink("fifo");
-    }
+int main() 
+{
+    setup_pipes();
+    handle_requests();
+    unlink(REQ_PIPE);
+    unlink(RESP_PIPE);
     return 0;
 }
-
-
-
 
 
