@@ -116,7 +116,7 @@ void read_status()
 
 int main(int argc, char* argv[]) 
 {
-    if (argc < 3 && strcmp(argv[1], "status") != 0) 
+    if (argc < 2) 
     {
         fprintf(stderr, "Usage: ./client <command> [<args>...]\n"); //DEBUG - FPRINTF isnt allowed, i think - keep for debugging only
         fprintf(stderr, "Commands: execute -u|-p <time> <command>\n");
