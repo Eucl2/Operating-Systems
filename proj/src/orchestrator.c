@@ -33,7 +33,8 @@ void setup_pipes()
 void log_task(Task *task) 
 {
     int fd = open(LOG_FILE, O_WRONLY | O_CREAT | O_APPEND, 0666);
-    if (fd == -1) {
+    if (fd == -1) 
+    {
         perror("Failed to open log file");
         return;
     }
@@ -109,6 +110,8 @@ void execute_task(Task *task)
     printf("Task to execute: %s\n", task->command); //debugging
     if (task == NULL) return;
     struct timeval end_time;
+    
+    char output_file_name[64]; //required to send stdout e perror to text file with task id
 
     gettimeofday(&task->start_time, NULL); // Start time
     update_task_status(task, "executing");
@@ -116,7 +119,18 @@ void execute_task(Task *task)
     int pid = fork();
     if (pid == 0) 
     { 
-        // Child process
+        // Child process: redirect stdout and stderr
+        snprintf(output_file_name, sizeof(output_file_name), "task_output_%d.log", task->id);
+        int out_fd = open(output_file_name, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+        if (out_fd == -1) 
+        {
+            perror("Failed to open output file");
+            exit(EXIT_FAILURE);
+        }
+        dup2(out_fd, STDOUT_FILENO);
+        dup2(out_fd, STDERR_FILENO);
+        close(out_fd);
+
         execlp("/bin/sh", "sh", "-c", task->command, NULL);
         exit(EXIT_FAILURE);
     } 
@@ -149,6 +163,11 @@ void handle_requests()
         if (strcmp(token, "execute") == 0) 
         {
             Task *new_task = malloc(sizeof(Task));
+            if(new_task == NULL)
+            {
+                //error allocating memory
+                continue;
+            }
             new_task->id = taskCounter++;
 
             // Skip 'execute' and scheduling flags
