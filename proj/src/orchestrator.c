@@ -89,14 +89,13 @@ void write_status_to_client(int fd)
     {
         if (strcmp(current->status, "completed") == 0) 
         {
-            //deveria mostrar o tempo que demorrou a executar, teremos que guardá-lo na struct. Por agora fica o start time
             //should be using write() ?
             len = snprintf(line, sizeof(line), "%d %s %ld ms\n", current->id, current->command, current->exec_time);
             write(fd, line, len);
         }
     }
 
-    // Indicar fim da transmissão -alterar?
+    // Indicar fim da transmissão - alterar? //linha em branco - alterar
     write(fd, "END\n", strlen("END\n"));
 }
 
