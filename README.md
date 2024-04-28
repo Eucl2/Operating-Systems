@@ -20,7 +20,7 @@ Mais informações no enunciado do projeto
 
 * ./client sem args => segmentation fault ✔️
 * Status vai mostrar o tempo de inicio em vez de mostrar o tempo que demorou a executar.  ✔️ -> Added to struct
-* Os ficheiros dos projetos executados devem ser enviados para uma pasta vinda do input. ✔️
+* Os ficheiros dos projetos executados devem ser enviados para uma pasta vinda do input. ✔️ -> pasta de testes: file_saver
 
 
 #### Falta:

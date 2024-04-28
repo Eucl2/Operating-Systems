@@ -104,7 +104,7 @@ void update_task_status(Task *task, const char* status)
     strcpy(task->status, status);
 }
 
-void execute_task(Task *task) 
+void execute_task(Task *task, const char *output_folder) 
 {
     printf("Task to execute: %s\n", task->command); //debugging
     if (task == NULL) return;
@@ -119,7 +119,7 @@ void execute_task(Task *task)
     if (pid == 0) 
     { 
         // Child process: redirect stdout and stderr
-        snprintf(output_file_name, sizeof(output_file_name), "task_output_%d.log", task->id);
+        snprintf(output_file_name, sizeof(output_file_name), "../%s/task_output_%d.log",output_folder, task->id);
         int out_fd = open(output_file_name, O_WRONLY | O_CREAT | O_TRUNC, 0666);
         if (out_fd == -1) 
         {
@@ -150,7 +150,7 @@ void execute_task(Task *task)
     }
 }
 
-void handle_requests() 
+void handle_requests(const char *output_folder) 
 {
     int req_fd = open(REQ_PIPE, O_RDONLY);
     char command[256];
@@ -200,7 +200,7 @@ void handle_requests()
             write(resp_fd, response, strlen(response));
             close(resp_fd);
 
-            execute_task(new_task);
+            execute_task(new_task, output_folder);
         } 
         else if (strcmp(token, "status") == 0) 
         {
@@ -223,10 +223,22 @@ void handle_requests()
 #include <string.h>
 #include <unistd.h>
 
-int main() 
+int main(int argc, char* argv[]) 
 {
+    if (argc != 4) 
+    {
+    printf("Usage: ./orchestrator output_folder parallel-tasks sched-policy\n");
+    exit(EXIT_FAILURE);
+    }
+
+    const char *output_folder = argv[1]; //not being used
+    int parallel_tasks = atoi(argv[2]); // Converte o número de tarefas paralelas para int
+    // const char *sched_policy = argv[3]; //not being used - if uncommented, a strange error occurs
+    
+    // printf("received everything => parallel tasks: %i\n", parallel_tasks); //debug
+    
     setup_pipes(); // should we be doing mkfifo for both pipes here?
-    handle_requests();
+    handle_requests(output_folder);
     unlink(REQ_PIPE);
     unlink(RESP_PIPE);
     return 0;

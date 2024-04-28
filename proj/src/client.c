@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    char full_command[1024] = {0}; //review
+    char full_command[1024] = {0};
     if (strcmp(argv[1], "execute") == 0) 
     {
         if (argc < 5) 
