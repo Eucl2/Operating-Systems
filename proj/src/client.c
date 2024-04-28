@@ -20,7 +20,7 @@ void send_request(char* command)
     {
         printf("Error: Command is NULL\n"); //debugging
     }
-    int fd_req;
+    int fd_req, fd_resp;
     char task_id[100] = {0};
 
     if ((fd_req = open(REQ_PIPE, O_WRONLY)) == -1) 
@@ -37,7 +37,27 @@ void send_request(char* command)
     }
     close(fd_req);
 
-    //missing: reading the id da tarefa vinda do orchestrator
+    // Reading the task ID from the orchestrator
+    if (strncmp(command, "execute", 7) == 0) 
+    //task ID only for execute commands
+    {
+        if ((fd_resp = open(RESP_PIPE, O_RDONLY)) == -1)
+        {
+            perror("Server offline - cannot open response pipe");
+            exit(1);
+        }
+        if (read(fd_resp, task_id, sizeof(task_id) - 1) > 0)
+        {
+            printf("TASK %s Received\n", task_id);
+        }
+        else
+        {
+            perror("Failed to read task ID from server");
+            close(fd_resp);
+            exit(1);
+        }
+        close(fd_resp);
+    }
 }
 
 void read_status() 

@@ -24,16 +24,17 @@ Mais informações no enunciado do projeto
 #### Falta:
 
 * Orchestrator tem que receber os argumentos
-* Mostrar id da tarefa após enviar o pedido
+* Mostrar id da tarefa após enviar o pedido ✔️
 * Pipelines no orchestrator
 * Implementar sjf - comparar resultados com o FCFS
 * Orchestrator nao bloquear quando recebe 2 progs
 * Orchs nao pode morrer
+* Enviar stdout para txt com o id da tarefa ✔️
 
 
 #### Dúvidas:
-* Se fifo nao existir, devemos criá-lo? ou é desnecessário?
-* Localizacao dos tests, alterar ou deixar?
-* Posso usar realloc nas pipelines? -> sim
+* Se fifo nao existir, devemos criá-lo? ou é desnecessário? -> criar : TODO!
+* <s>Localizacao dos tests, alterar ou deixar?</s>
+* <s>Posso usar realloc nas pipelines?</s> -> sim
 * Como fechar o orquestrador quando já não quiser usar mais? será que mandar um pedido do cliente ./client shutdown seria aceitável?
-
+* ficheiros temporários devem ir para o tmp? e devem ser apagados no final?

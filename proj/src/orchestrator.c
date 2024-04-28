@@ -155,6 +155,7 @@ void handle_requests()
 {
     int req_fd = open(REQ_PIPE, O_RDONLY);
     char command[256];
+    char response[50];
 
     while (read(req_fd, command, sizeof(command)) > 0) 
     {
@@ -188,6 +189,17 @@ void handle_requests()
             strcpy(new_task->status, "waiting");
             new_task->next = head;
             head = new_task;
+
+            //send task ID back to the client
+            int resp_fd = open(RESP_PIPE, O_WRONLY);
+            if(resp_fd == -1)
+            {
+                perror("error opening response pipe");
+                continue;
+            }
+            sprintf(response, "%d", new_task->id);
+            write(resp_fd, response, strlen(response));
+            close(resp_fd);
 
             execute_task(new_task);
         } 
