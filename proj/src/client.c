@@ -10,11 +10,22 @@
 #define REQ_PIPE "client_to_orchestrator"
 #define RESP_PIPE "orchestrator_to_client"
 
+int is_integer(const char *str) 
+{
+    if (*str == '\0') return 0;
+    for (; *str != '\0'; str++) 
+    {
+        if (*str < '0' || *str > '9') return 0;
+    }
+
+    return 1;  // Todos os caracteres são dígitos válidos
+}
+
 void send_request(char* command) 
 {
     if (command != NULL) 
     {
-        printf("Sending [ %s ] request to orchestrator... \n", command); //debugging
+        // printf("Sending [ %s ] request to orchestrator... \n", command); //debugging
     } 
     else 
     {
@@ -124,11 +135,11 @@ int main(int argc, char* argv[])
         }
 
         // Check if argv[2] (aka duration) is a valid integer - Useless?
-        for (char* p = argv[2]; *p; p++) {
-            if (!isdigit(*p)) {
-                fprintf(stderr, "Invalid duration: %s\n", argv[2]);
-                return 1;
-            }
+        
+        if (!is_integer(argv[2])) 
+        {
+            fprintf(stderr, "Invalid duration!: %s\n", argv[2]);
+            return 1;
         }
 
         // Construct the full command to send to the server

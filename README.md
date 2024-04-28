@@ -19,6 +19,7 @@ Mais informações no enunciado do projeto
 #### Erros:
 
 * ./client sem args => segmentation fault
+* Status vai mostrar o tempo de inicio em vez de mostrar o tempo que demorou a executar.  ✔️ -> Added to struct
 
 
 #### Falta:
