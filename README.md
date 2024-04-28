@@ -25,7 +25,7 @@ Mais informações no enunciado do projeto
 
 #### Falta:
 
-* Orchestrator tem que receber os argumentos
+* Orchestrator tem que receber os argumentos ✔️ -> parallel tasks e sched_policy não estão a ser usadas
 * Mostrar id da tarefa após enviar o pedido ✔️
 * Pipelines no orchestrator
 * Implementar sjf - comparar resultados com o FCFS
