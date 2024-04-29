@@ -21,6 +21,8 @@ Mais informações no enunciado do projeto
 * ./client sem args => segmentation fault ✔️
 * Status vai mostrar o tempo de inicio em vez de mostrar o tempo que demorou a executar.  ✔️ -> Added to struct
 * Os ficheiros dos projetos executados devem ser enviados para uma pasta vinda do input. ✔️ -> pasta de testes: file_saver
+* Quando são enviados 2 pedidos de clientes ao mesmo tempo, o id só é devolvido ao cliente do segundo pedido após o pedido do primeiro cliente terminar
+* Por vezes o input é recebido de forma desformatada no servidor 
 
 
 #### Falta:
