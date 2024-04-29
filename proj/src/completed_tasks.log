@@ -1,0 +1,3 @@
+Task ID 1 completed. Command: ls -l , Execution Time: 6 ms
+Task ID 2 completed. Command: hello.c , Execution Time: 0 ms
+Task ID 3 completed. Command: ls -l c , Execution Time: 2 ms

@@ -30,7 +30,7 @@ Mais informações no enunciado do projeto
 * Pipelines no orchestrator
 * Implementar sjf - comparar resultados com o FCFS
 * Orchestrator nao bloquear quando recebe 2 progs
-* Orchs nao pode morrer
+* Orchs nao pode morrer ✔️
 * Enviar stdout para txt com o id da tarefa ✔️
 
 

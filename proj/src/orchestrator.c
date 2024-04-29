@@ -153,6 +153,8 @@ void execute_task(Task *task, const char *output_folder)
 void handle_requests(const char *output_folder) 
 {
     int req_fd = open(REQ_PIPE, O_RDONLY);
+    int req_fd_write = open(REQ_PIPE, O_WRONLY);
+    
     char command[256];
     char response[50];
 
@@ -217,6 +219,7 @@ void handle_requests(const char *output_folder)
         }
     }
 
+    close(req_fd_write);
     close(req_fd);
 }
 
