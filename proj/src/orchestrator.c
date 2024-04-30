@@ -15,7 +15,7 @@
 typedef struct task {
     int id;
     char command[256];
-    char status[20];  // "waiting", "executing", "completed"
+    char status[20];  // "waiting", "executing", "completed."
     long exec_time; // in milliseconds
     struct timeval start_time;
     struct task* next;
@@ -28,6 +28,16 @@ void setup_pipes()
 {
     mkfifo(REQ_PIPE, 0666);
     mkfifo(RESP_PIPE, 0666);
+}
+
+void clean_up(int req_fd, int req_fd_write) 
+{
+    //tbu when shutting down orchestrator
+    close(req_fd_write);
+    close(req_fd);
+    unlink(REQ_PIPE);
+    unlink(RESP_PIPE);
+
 }
 
 void log_task(Task *task) 
@@ -55,6 +65,7 @@ void calculate_and_log_duration(struct timeval start, struct timeval end, Task *
 
 void write_status_to_client(int fd) 
 {
+    printf("writing status to client...\n");
     Task *current = head;
     char line[256]; // Buffer para linhas individuais
     int len; // Comprimento da string para enviar
@@ -62,7 +73,7 @@ void write_status_to_client(int fd)
     // Escrever cabeçalhos de cada parte
     
     write(fd, "Executing\n", strlen("Executing\n"));
-    printf("Status - writing execution..."); //debugging
+    printf("Status - writing execution...\n"); //debugging
     for (current = head; current != NULL; current = current->next) 
     {
         if (strcmp(current->status, "executing") == 0) 
@@ -73,7 +84,7 @@ void write_status_to_client(int fd)
     }
 
     write(fd, "Scheduled\n", strlen("Scheduled\n"));
-    printf("Status - writing acheduled..."); //debugging
+    printf("Status - writing scheduled...\n"); //debugging
     for (current = head; current != NULL; current = current->next) 
     {
         if (strcmp(current->status, "waiting") == 0) 
@@ -84,7 +95,7 @@ void write_status_to_client(int fd)
     }
 
     write(fd, "Completed\n", strlen("Completed\n"));
-    printf("Status - writing completed..."); //debugging
+    printf("Status - writing completed...\n"); //debugging
     for (current = head; current != NULL; current = current->next) 
     {
         if (strcmp(current->status, "completed") == 0) 
@@ -129,7 +140,7 @@ void execute_task(Task *task, const char *output_folder)
         dup2(out_fd, STDOUT_FILENO);
         dup2(out_fd, STDERR_FILENO);
         close(out_fd);
-
+        printf("Executing %s...\n", task->command); //debugging
         execlp("/bin/sh", "sh", "-c", task->command, NULL);
         exit(EXIT_FAILURE);
     } 
@@ -150,77 +161,101 @@ void execute_task(Task *task, const char *output_folder)
     }
 }
 
+void handle_command(char* command, const char *output_folder) 
+{
+    char *token = strtok(command, " ");
+    if (strcmp(token, "execute") == 0) 
+    {
+        Task *new_task = (Task*)malloc(sizeof(Task));
+        if (new_task == NULL) 
+        {
+            perror("Failed to allocate memory for new task");
+            return;
+        }
+        new_task->id = taskCounter++;  // Allocate ID in parent
+
+        // Skip 'execute' and scheduling flags
+        token = strtok(NULL, " "); // Skip 'execute'
+        token = strtok(NULL, " "); // Skip '-u' or '-p'
+        token = strtok(NULL, " "); // Skip duration
+
+        strcpy(new_task->command, "");
+        while (token != NULL) 
+        {
+            strcat(new_task->command, token);
+            strcat(new_task->command, " ");
+            token = strtok(NULL, " ");
+        }
+
+        strcpy(new_task->status, "waiting");
+        new_task->next = head;
+        head = new_task;
+
+        int resp_fd = open(RESP_PIPE, O_WRONLY);
+        if (resp_fd == -1) 
+        {
+            perror("Failed to open response pipe");
+            return;
+        }
+        char response[50];
+        sprintf(response, "%d", new_task->id);
+        write(resp_fd, response, strlen(response));
+        close(resp_fd);
+
+        // Fork a process to execute the task
+        int pid = fork();
+        if (pid == 0) 
+        { 
+            // Child process to execute
+            execute_task(new_task, output_folder);
+            exit(0);
+        } 
+        else if (pid < 0) 
+        {
+            perror("Failed to fork");
+        }
+    } 
+    else if (strcmp(token, "status") == 0) 
+    {
+        printf("Status request received.\n"); //debugging
+        int resp_fd = open(RESP_PIPE, O_WRONLY);
+        if (resp_fd == -1) 
+        {
+            perror("Error opening response pipe");
+            return;
+        }
+        write_status_to_client(resp_fd);
+        close(resp_fd);
+    } 
+    else if (strcmp(token, "shutdown") == 0) 
+    {
+        printf("Shutting down orchestrator...\n");
+        clean_up(-1, -1);  // ?????????????????
+        exit(0);
+    }
+}
+
 void handle_requests(const char *output_folder) 
 {
+    printf("hey\n");
     int req_fd = open(REQ_PIPE, O_RDONLY);
-    int req_fd_write = open(REQ_PIPE, O_WRONLY);
-    
-    char command[256];
-    char response[50];
+    int req_fd_write = open(REQ_PIPE, O_WRONLY); // Keep the pipe open
 
-    while (read(req_fd, command, sizeof(command)) > 0) 
+    if (req_fd == -1 || req_fd_write == -1) 
     {
-        printf("Received command: %s\n", command);
-        char *token = strtok(command, " ");
-        if (strcmp(token, "execute") == 0) 
-        {
-            Task *new_task = malloc(sizeof(Task));
-            if(new_task == NULL)
-            {
-                //error allocating memory
-                continue;
-            }
-            new_task->id = taskCounter++;
-
-            // Skip 'execute' and scheduling flags
-            token = strtok(NULL, " "); // Skip 'execute'
-            token = strtok(NULL, " "); // Skip '-u' or '-p'
-            token = strtok(NULL, " "); // Skip duration
-
-            // Start constructing the command to be executed
-            strcpy(new_task->command, "");
-
-            while (token != NULL) 
-            {
-                strcat(new_task->command, token);
-                strcat(new_task->command, " ");
-                token = strtok(NULL, " ");
-            }
-
-            strcpy(new_task->status, "waiting");
-            new_task->next = head;
-            head = new_task;
-
-            //send task ID back to the client
-            int resp_fd = open(RESP_PIPE, O_WRONLY);
-            if(resp_fd == -1)
-            {
-                perror("error opening response pipe");
-                continue;
-            }
-            sprintf(response, "%d", new_task->id);
-            write(resp_fd, response, strlen(response));
-            close(resp_fd);
-
-            execute_task(new_task, output_folder);
-        } 
-        else if (strcmp(token, "status") == 0) 
-        {
-            int resp_fd = open(RESP_PIPE, O_WRONLY);
-            
-            if (resp_fd == -1) 
-            {
-                perror("Error opening response pipe");
-                exit(1);
-            }
-
-            write_status_to_client(resp_fd);
-            close(resp_fd); //fechar no final
-        }
+        perror("Failed to open request or response pipe");
+        return;
     }
 
-    close(req_fd_write);
-    close(req_fd);
+    char command[300];
+    while (read(req_fd, command, sizeof(command) - 1) > 0) 
+    {
+        printf("1.comando: %s\n", command);
+        command[sizeof(command) - 1] = '\0'; // Ensure null-terminated
+        handle_command(command, output_folder);
+    }
+
+    clean_up(req_fd, req_fd_write);
 }
 
 #include <string.h>
@@ -246,5 +281,3 @@ int main(int argc, char* argv[])
     unlink(RESP_PIPE);
     return 0;
 }
-
-

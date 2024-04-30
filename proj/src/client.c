@@ -25,7 +25,7 @@ void send_request(char* command)
 {
     if (command != NULL) 
     {
-        // printf("Sending [ %s ] request to orchestrator... \n", command); //debugging
+        printf("Sending [ %s ] request to orchestrator... \n", command); //debugging
     } 
     else 
     {
@@ -39,7 +39,7 @@ void send_request(char* command)
         perror("Server offline - cannot open request pipe");
         exit(1);
     }
-
+    // strcat(command, "\n"); //trying to avoid errors reading the pipe on orchestrator
     if (write(fd_req, command, strlen(command)) == -1) 
     {
         perror("Write to server failed");
@@ -90,7 +90,6 @@ void read_status()
         ssize_t count = read(fd_resp, response, sizeof(response) - 1);
         if (count > 0) 
         {
-            printf("counting...\n"); //debugging
             response[count] = '\0';  // Garantir terminação da string
             if (strstr(response, "END")) //é permitido usar strstr? 
             {
@@ -126,7 +125,14 @@ int main(int argc, char* argv[])
     }
 
     char full_command[1024] = {0};
-    if (strcmp(argv[1], "execute") == 0) 
+
+    if (strcmp(argv[1], "shutdown") == 0) 
+    {
+        printf ("Detetado pedido de shutdown. A enviar para o orchestrator...\n"); //debug
+        send_request(argv[1]);
+    }
+
+    else if (strcmp(argv[1], "execute") == 0) 
     {
         if (argc < 5) 
         {
@@ -134,7 +140,7 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        // Check if argv[2] (aka duration) is a valid integer - Useless?
+        // Check if argv[2] (aka duration) is a valid integer - Useless??
         
         if (!is_integer(argv[2])) 
         {
@@ -156,7 +162,7 @@ int main(int argc, char* argv[])
             strcat(full_command, " ");
         }
 
-    send_request(full_command); //send exec request
+        send_request(full_command); //send exec request
 
     } 
 
