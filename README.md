@@ -21,8 +21,8 @@ Mais informações no enunciado do projeto
 * ./client sem args => segmentation fault ✔️
 * Status vai mostrar o tempo de inicio em vez de mostrar o tempo que demorou a executar.  ✔️ -> Added to struct
 * Os ficheiros dos projetos executados devem ser enviados para uma pasta vinda do input. ✔️ -> pasta de testes: file_saver
-* Quando são enviados 2 pedidos de clientes ao mesmo tempo, o id só é devolvido ao cliente do segundo pedido após o pedido do primeiro cliente terminar
-* Por vezes o input é recebido de forma desformatada no servidor 
+* Quando são enviados 2 pedidos de clientes ao mesmo tempo, o id só é devolvido ao cliente do segundo pedido após o pedido do primeiro cliente terminar ✔️
+* Por vezes o input é recebido de forma desformatada no servidor
 
 
 #### Falta:
@@ -31,7 +31,7 @@ Mais informações no enunciado do projeto
 * Mostrar id da tarefa após enviar o pedido ✔️
 * Pipelines no orchestrator
 * Implementar sjf - comparar resultados com o FCFS
-* Orchestrator nao bloquear quando recebe 2 progs
+* Orchestrator nao bloquear quando recebe 2 progs ✔️
 * Orchs nao pode morrer ✔️
 * Enviar stdout para txt com o id da tarefa ✔️
 
