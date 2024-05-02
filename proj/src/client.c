@@ -73,7 +73,7 @@ void send_request(char* command)
 
 void read_status() 
 {
-    printf("Reading status from orchestrator...\n"); //debuging
+    printf("Reading status from orchestrator...\n\n"); //debuging
     int fd_resp = open(RESP_PIPE, O_RDONLY);
     
     if (fd_resp == -1) 
@@ -86,7 +86,6 @@ void read_status()
     // Ler a resposta até encontrar "END"
     while (1) 
     {
-        printf("Starting to read after opening pipe...\n"); //debuging
         ssize_t count = read(fd_resp, response, sizeof(response) - 1);
         if (count > 0) 
         {

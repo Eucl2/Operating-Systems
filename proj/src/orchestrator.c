@@ -250,9 +250,10 @@ void handle_requests(const char *output_folder)
     char command[300];
     while (read(req_fd, command, sizeof(command) - 1) > 0) 
     {
-        printf("1.comando: %s\n", command);
+        printf(">Comando a executar: %s\n", command);
         command[sizeof(command) - 1] = '\0'; // Ensure null-terminated
         handle_command(command, output_folder);
+        memset(command, 0, sizeof(command)); //limpar buffer. é permitido usar isto? => essencial para evitar erros de leitura!
     }
 
     clean_up(req_fd, req_fd_write);
