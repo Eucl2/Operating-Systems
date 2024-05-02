@@ -83,7 +83,7 @@ void write_status_to_client(int fd)
         }
     }
 
-    write(fd, "Scheduled\n", strlen("Scheduled\n"));
+    write(fd, "\nScheduled\n", strlen("\nScheduled\n"));
     printf("Status - writing scheduled...\n"); //debugging
     for (current = head; current != NULL; current = current->next) 
     {
@@ -94,7 +94,7 @@ void write_status_to_client(int fd)
         }
     }
 
-    write(fd, "Completed\n", strlen("Completed\n"));
+    write(fd, "\nCompleted\n", strlen("\nCompleted\n"));
     printf("Status - writing completed...\n"); //debugging
     for (current = head; current != NULL; current = current->next) 
     {
@@ -140,7 +140,7 @@ void execute_task(Task *task, const char *output_folder)
         dup2(out_fd, STDOUT_FILENO);
         dup2(out_fd, STDERR_FILENO);
         close(out_fd);
-        printf("Executing %s...\n", task->command); //debugging
+        //printf("Executing %s...\n", task->command); //debugging => incrivel, este printf estava a escrever no ficheiro ^.^
         execlp("/bin/sh", "sh", "-c", task->command, NULL);
         exit(EXIT_FAILURE);
     } 

@@ -23,7 +23,9 @@ Mais informações no enunciado do projeto
 * Os ficheiros dos projetos executados devem ser enviados para uma pasta vinda do input. ✔️ -> pasta de testes: file_saver
 * Quando são enviados 2 pedidos de clientes ao mesmo tempo, o id só é devolvido ao cliente do segundo pedido após o pedido do primeiro cliente terminar ✔️
 * Por vezes o input é recebido de forma desformatada no servidor ✔️
-* Status não é recebido corretamente no cliente, ajustar!
+* Status não é recebido corretamente no cliente, ajustar! ✔️
+* Status das tasks não está a ser atualizado corretamente
+* Resposta do status não deve conter a palavra terminal "END".
 
 
 #### Falta:

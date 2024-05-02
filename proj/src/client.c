@@ -73,43 +73,45 @@ void send_request(char* command)
 
 void read_status() 
 {
-    printf("Reading status from orchestrator...\n\n"); //debuging
+    printf("Reading status from orchestrator...\n\n"); //debugging
     int fd_resp = open(RESP_PIPE, O_RDONLY);
-    
+
     if (fd_resp == -1) 
     {
         perror("Server offline on read - cannot open response pipe");
         exit(1);
     }
 
-    char response[1024];
+    char response[1024]; //buffer auxiliar à leitura do status
+    int total_read = 0;
     // Ler a resposta até encontrar "END"
     while (1) 
     {
-        ssize_t count = read(fd_resp, response, sizeof(response) - 1);
+        ssize_t count = read(fd_resp, response + total_read, sizeof(response) - 1 - total_read);
         if (count > 0) 
         {
-            response[count] = '\0';  // Garantir terminação da string
-            if (strstr(response, "END")) //é permitido usar strstr? 
+            total_read += count;
+            response[total_read] = '\0';  // Garantir terminação da string
+            if (strstr(response, "END")) 
             {
                 break;  // Sair do loop quando "END" for recebido
             }
-            printf("response:\n%s", response);  // Mostrar resposta
         } 
         else if (count == 0) 
         {
-            printf("pipe was closed :( )"); //debugging
+            perror("Pipe foi fechada");
             break;
         } 
         else 
         {
-            // Erro de leitura
             perror("Read from server failed");
             break;
         }
     }
+    printf("%s", response);  // Mostrar resposta => podemos usar printf neste caso?
     close(fd_resp);
 }
+
 
 
 int main(int argc, char* argv[]) 
