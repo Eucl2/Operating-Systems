@@ -45,3 +45,4 @@ Mais informações no enunciado do projeto
 * <s>Posso usar realloc nas pipelines?</s> -> sim
 * Como fechar o orquestrador quando já não quiser usar mais? será que mandar um pedido do cliente ./client shutdown seria aceitável? -> "é completamente aceitável". -> Implementado ✔️
 * ficheiros temporários devem ir para o tmp? e devem ser apagados no final?
+* Proibido usar printf para mostrar ao cliente? -> Deve ser usado write com a função sprintf em conjunção. -> Feito ✔️
