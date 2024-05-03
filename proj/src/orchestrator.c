@@ -76,6 +76,7 @@ void write_status_to_client(int fd)
     printf("Status - writing execution...\n"); //debugging
     for (current = head; current != NULL; current = current->next) 
     {
+        printf("STATUS: %s : %s\n", current->command, current->status ); //debug
         if (strcmp(current->status, "executing") == 0) 
         {
             len = snprintf(line, sizeof(line), "%d %s\n", current->id, current->command); //should be using write() ?
@@ -112,12 +113,13 @@ void write_status_to_client(int fd)
 
 void update_task_status(Task *task, const char* status) 
 {
+    printf("Updating status of task %d from %s to %s\n", task->id, task->status, status); // Log de mudança de status
     strcpy(task->status, status);
 }
 
 void execute_task(Task *task, const char *output_folder) 
 {
-    printf("Task to execute: %s\n", task->command); //debugging
+    printf("Starting execution of task: %d\n", task->id);
     if (task == NULL) return;
     struct timeval end_time;
     
@@ -140,8 +142,8 @@ void execute_task(Task *task, const char *output_folder)
         dup2(out_fd, STDOUT_FILENO);
         dup2(out_fd, STDERR_FILENO);
         close(out_fd);
-        //printf("Executing %s...\n", task->command); //debugging => incrivel, este printf estava a escrever no ficheiro ^.^
         execlp("/bin/sh", "sh", "-c", task->command, NULL);
+        perror("execlp failed");
         exit(EXIT_FAILURE);
     } 
     else if (pid > 0) 
@@ -154,6 +156,7 @@ void execute_task(Task *task, const char *output_folder)
         calculate_and_log_duration(task->start_time, end_time, task);
 
         update_task_status(task, "completed");
+        printf("Task %d completed.\n", task->id);
     } 
     else 
     {
@@ -230,7 +233,7 @@ void handle_command(char* command, const char *output_folder)
     else if (strcmp(token, "shutdown") == 0) 
     {
         printf("Shutting down orchestrator...\n");
-        clean_up(-1, -1);  // ?????????????????
+        clean_up(-1, -1);  // ????????????????? passar os fd
         exit(0);
     }
 }
@@ -270,11 +273,11 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
     }
 
-    const char *output_folder = argv[1]; //not being used
-    int parallel_tasks = atoi(argv[2]); // Converte o número de tarefas paralelas para int
-    // const char *sched_policy = argv[3]; //not being used - if uncommented, a strange error occurs
+    const char *output_folder = argv[1];
+    int parallel_tasks = atoi(argv[2]); // Converte o número de tarefas paralelas para int -> not used
+    const char *sched_policy = argv[3]; //-> not used
     
-    // printf("received everything => parallel tasks: %i\n", parallel_tasks); //debug
+    printf("received everything => parallel tasks: %i and sched policy:%s\n", parallel_tasks, sched_policy); //debug
     
     setup_pipes(); // should we be doing mkfifo for both pipes here?
     handle_requests(output_folder);
