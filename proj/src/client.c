@@ -95,6 +95,7 @@ void read_status()
             response[total_read] = '\0';  // Garantir terminação da string
             if (strstr(response, "END")) 
             {
+                *strstr(response, "END") = '\0'; // Substitui "END" por /0 na response. Desta forma desaparece do output
                 break;  // Sair do loop quando "END" for recebido
             }
         } 

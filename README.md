@@ -25,7 +25,7 @@ Mais informações no enunciado do projeto
 * Por vezes o input é recebido de forma desformatada no servidor ✔️
 * Status não é recebido corretamente no cliente, ajustar! ✔️
 * Status das tasks não está a ser atualizado corretamente
-* Resposta do status não deve conter a palavra terminal "END".
+* Resposta do status não deve conter a palavra terminal "END". ✔️
 * FCFS é na verdade LIFO. Rever código e atualizar ✔️
 
 
