@@ -16,7 +16,8 @@ typedef struct task {
     int id;
     char command[256];
     char status[20];  // "waiting", "executing", "completed."
-    long exec_time; // in milliseconds
+    long exec_time; // Real execution time in milliseconds
+    long estimated_time; // Estimated time in milliseconds provided by the user when requests exec
     struct timeval start_time;
     struct task* next;
 } Task;
@@ -24,6 +25,28 @@ typedef struct task {
 Task* head = NULL;  // Head of the linked list for task queue
 int taskCounter = 1;  // Task ID counter
 int activeTasks = 0;  // Global counter for active tasks -> still not used
+
+Task* find_next_sjf_task() //func to find the next task when the sched policy is SJF
+{
+    Task *current = head;
+    Task *selected = NULL;
+    long min_time = -1;  // Flag -> inicializa com -1 para indicar que ainda não encontrou nenhuma tarefa
+
+    while (current != NULL) 
+    {
+        if (strcmp(current->status, "waiting") == 0) 
+        {
+            if (min_time == -1 || current->estimated_time < min_time) 
+            {
+                selected = current;
+                min_time = current->estimated_time;
+            }
+        }
+        current = current->next;
+    }
+    
+    return selected;
+}
 
 
 void setup_pipes() 
@@ -204,7 +227,9 @@ void handle_command(char* command, const char *output_folder, int max_parallel_t
         {
             head = new_task; // If list is empty, new task becomes head
             new_task->next = NULL;
-        } else {
+        } 
+        else 
+        {
             Task *current = head;
             while (current->next != NULL) 
             {
@@ -226,6 +251,7 @@ void handle_command(char* command, const char *output_folder, int max_parallel_t
         close(resp_fd);
 
         // Fork a process to execute the task
+        
         int pid = fork();
         if (pid == 0) 
         { 
@@ -253,7 +279,7 @@ void handle_command(char* command, const char *output_folder, int max_parallel_t
     else if (strcmp(token, "shutdown") == 0) 
     {
         printf("Shutting down orchestrator...\n");
-        clean_up(-1, -1);  // ????????????????? passar os fd
+        clean_up(-1, -1);  // ????????????????? passar os fd?
         exit(0);
     }
 }
@@ -274,7 +300,7 @@ void handle_requests(const char *output_folder, const char *sched_policy, int ma
 
     if (strcmp(sched_policy, "FCFS") == 0)
     {
-        printf("FCFS execution\n");
+        printf("FCFS execution\n"); //debug
      
         char command[300];
         while (read(req_fd, command, sizeof(command) - 1) > 0) 
@@ -282,17 +308,29 @@ void handle_requests(const char *output_folder, const char *sched_policy, int ma
             printf(">Comando a executar: %s\n", command);
             command[sizeof(command) - 1] = '\0'; // Ensure null-terminated
             handle_command(command, output_folder, max_parallel_tasks);
-            memset(command, 0, sizeof(command)); //limpar buffer. é permitido usar isto? => essencial para evitar erros de leitura!
+            memset(command, 0, sizeof(command)); // Clear buffer
         }
 
     }
-    else if(strcmp(sched_policy,"SJF"))
+    else if(strcmp(sched_policy,"SJF") == 0)
     {
-        printf("SJF still not implemented. Please shutdown client\n");
+        printf("SJF execution\n"); //debug
+        char command[300];
+        while (read(req_fd, command, sizeof(command) - 1) > 0) 
+        {
+            command[sizeof(command) - 1] = '\0'; // Ensure null-terminated
+            Task *next_task = find_next_sjf_task();
+            if (next_task != NULL) 
+            {
+                execute_task(next_task, output_folder);
+            }
+            memset(command, 0, sizeof(command)); // Clear buffer
+        }
+
     }
     else
     {
-        printf("sched policy not recognised. Shutting down client...\n");
+        printf("Sched policy not recognised. Please shutdown client...\n");
     }
     
     clean_up(req_fd, req_fd_write);
