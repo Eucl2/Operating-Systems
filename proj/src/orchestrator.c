@@ -23,6 +23,8 @@ typedef struct task {
 
 Task* head = NULL;  // Head of the linked list for task queue
 int taskCounter = 1;  // Task ID counter
+int activeTasks = 0;  // Global counter for active tasks -> still not used
+
 
 void setup_pipes() 
 {
@@ -115,6 +117,7 @@ void update_task_status(Task *task, const char* status)
 {
     printf("Updating status of task %d from %s to %s\n", task->id, task->status, status); // Log de mudança de status
     strcpy(task->status, status);
+    printf("Updated task %d 's status to: %s\n", task->id, task->status);
 }
 
 void execute_task(Task *task, const char *output_folder) 
@@ -164,7 +167,7 @@ void execute_task(Task *task, const char *output_folder)
     }
 }
 
-void handle_command(char* command, const char *output_folder) 
+void handle_command(char* command, const char *output_folder, int max_parallel_tasks) 
 {
     char *token = strtok(command, " ");
     if (strcmp(token, "execute") == 0) 
@@ -191,8 +194,25 @@ void handle_command(char* command, const char *output_folder)
         }
 
         strcpy(new_task->status, "waiting");
-        new_task->next = head;
-        head = new_task;
+
+        //LIFO
+        // new_task->next = head;
+        //head = new_task;
+        
+        //FCFS order
+        if (head == NULL) 
+        {
+            head = new_task; // If list is empty, new task becomes head
+            new_task->next = NULL;
+        } else {
+            Task *current = head;
+            while (current->next != NULL) 
+            {
+                current = current->next; // end of list
+            }
+            current->next = new_task; // Append new task at the end to maintain FCFS :)
+            new_task->next = NULL;
+        }
 
         int resp_fd = open(RESP_PIPE, O_WRONLY);
         if (resp_fd == -1) 
@@ -238,9 +258,11 @@ void handle_command(char* command, const char *output_folder)
     }
 }
 
-void handle_requests(const char *output_folder) 
+
+void handle_requests(const char *output_folder, const char *sched_policy, int max_parallel_tasks) 
 {
-    printf("hey\n");
+    printf("Orchestrator started with policy %s and max parallel tasks: %d\n", sched_policy, max_parallel_tasks);
+
     int req_fd = open(REQ_PIPE, O_RDONLY);
     int req_fd_write = open(REQ_PIPE, O_WRONLY); // Keep the pipe open
 
@@ -250,15 +272,29 @@ void handle_requests(const char *output_folder)
         return;
     }
 
-    char command[300];
-    while (read(req_fd, command, sizeof(command) - 1) > 0) 
+    if (strcmp(sched_policy, "FCFS") == 0)
     {
-        printf(">Comando a executar: %s\n", command);
-        command[sizeof(command) - 1] = '\0'; // Ensure null-terminated
-        handle_command(command, output_folder);
-        memset(command, 0, sizeof(command)); //limpar buffer. é permitido usar isto? => essencial para evitar erros de leitura!
-    }
+        printf("FCFS execution\n");
+     
+        char command[300];
+        while (read(req_fd, command, sizeof(command) - 1) > 0) 
+        {
+            printf(">Comando a executar: %s\n", command);
+            command[sizeof(command) - 1] = '\0'; // Ensure null-terminated
+            handle_command(command, output_folder, max_parallel_tasks);
+            memset(command, 0, sizeof(command)); //limpar buffer. é permitido usar isto? => essencial para evitar erros de leitura!
+        }
 
+    }
+    else if(strcmp(sched_policy,"SJF"))
+    {
+        printf("SJF still not implemented. Please shutdown client\n");
+    }
+    else
+    {
+        printf("sched policy not recognised. Shutting down client...\n");
+    }
+    
     clean_up(req_fd, req_fd_write);
 }
 
@@ -274,13 +310,11 @@ int main(int argc, char* argv[])
     }
 
     const char *output_folder = argv[1];
-    int parallel_tasks = atoi(argv[2]); // Converte o número de tarefas paralelas para int -> not used
+    int max_parallel_tasks = atoi(argv[2]); // Converte o número de tarefas paralelas para int -> not used
     const char *sched_policy = argv[3]; //-> not used
     
-    printf("received everything => parallel tasks: %i and sched policy:%s\n", parallel_tasks, sched_policy); //debug
-    
     setup_pipes(); // should we be doing mkfifo for both pipes here?
-    handle_requests(output_folder);
+    handle_requests(output_folder, sched_policy, max_parallel_tasks);
     unlink(REQ_PIPE);
     unlink(RESP_PIPE);
     return 0;
