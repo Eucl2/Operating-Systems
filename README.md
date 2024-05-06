@@ -19,7 +19,7 @@ Mais informações no enunciado do projeto
 #### Erros:
 
 * Status não mostra o tempo nas tasks completed. -> acontece porque o tempo está apenas a ser calculado no processo filho
-* Se o primeiro pedido for um execute, o comando é recebido de forma desformatada
+* Se o primeiro pedido for um execute, o comando é recebido de forma desformatada ✔️
 
 * ./client sem args => segmentation fault ✔️
 * Status vai mostrar o tempo de inicio em vez de mostrar o tempo que demorou a executar.  ✔️ -> Added to struct

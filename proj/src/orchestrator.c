@@ -396,6 +396,7 @@ void handle_requests(const char *output_folder, const char *sched_policy, int ma
     }
     
     char command[300];
+    memset(command, 0, sizeof(command)); // Clear buffer before reading to avoid trash in the buffer
     while (read(req_fd, command, sizeof(command) - 1) > 0) 
     {
         check_child_processes(); //no blocking while waiting for child to be completed
@@ -403,7 +404,6 @@ void handle_requests(const char *output_folder, const char *sched_policy, int ma
         printf(">Comando a executar: %s\n", command);
         command[sizeof(command) - 1] = '\0'; // Ensure null-terminated
         handle_command(command, output_folder, max_parallel_tasks, sched_policy);
-        memset(command, 0, sizeof(command)); // Clear buffer
     }
     
     clean_up(req_fd, req_fd_write);
