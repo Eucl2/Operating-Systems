@@ -19,6 +19,7 @@ Mais informações no enunciado do projeto
 #### Erros:
 
 * Status não mostra o tempo nas tasks completed. -> acontece porque o tempo está apenas a ser calculado no processo filho
+* Se o primeiro pedido for um execute, o comando é recebido de forma desformatada
 
 * ./client sem args => segmentation fault ✔️
 * Status vai mostrar o tempo de inicio em vez de mostrar o tempo que demorou a executar.  ✔️ -> Added to struct
@@ -34,8 +35,8 @@ Mais informações no enunciado do projeto
 #### Falta:
 
 * Pipelines no orchestrator
-* Implementar sjf - comparar resultados com o FCFS
 
+* Implementar sjf - comparar resultados com o FCFS ✔️ -> implementado. Comparar no relatorio os resultados que observamos
 * Orchestrator tem que receber os argumentos ✔️ -> parallel tasks e sched_policy não estão a ser usadas
 * Mostrar id da tarefa após enviar o pedido ✔️
 * Orchestrator nao bloquear quando recebe 2 progs ✔️

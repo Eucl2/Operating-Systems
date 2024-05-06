@@ -27,27 +27,6 @@ Task* head = NULL;  // Head of the linked list for task queue
 int taskCounter = 1;  // Task ID counter
 int activeTasks = 0;  // Global counter for active tasks -> still not used
 
-Task* find_next_sjf_task() //func to find the next task when the sched policy is SJF
-{
-    Task *current = head;
-    Task *selected = NULL;
-    long min_time = -1;  // Flag -> inicializa com -1 para indicar que ainda não encontrou nenhuma tarefa
-
-    while (current != NULL) 
-    {
-        if (strcmp(current->status, "waiting") == 0) 
-        {
-            if (min_time == -1 || current->estimated_time < min_time) 
-            {
-                selected = current;
-                min_time = current->estimated_time;
-            }
-        }
-        current = current->next;
-    }
-    
-    return selected;
-}
 
 Task* find_task_by_pid(pid_t pid) 
 {
@@ -231,37 +210,37 @@ void execute_task(Task *task, const char *output_folder)
 
 void dispatch_waiting_tasks(const char *output_folder, int max_parallel_tasks)
 { //goal: tasks waiting to be executed
-    Task *current = head;
+        Task *current = head;
 
-    while (current != NULL && activeTasks < max_parallel_tasks) 
-    {
-        if (strcmp(current->status, "waiting") == 0) 
+        while (current != NULL && activeTasks < max_parallel_tasks) 
         {
-            if (activeTasks < max_parallel_tasks) 
+            if (strcmp(current->status, "waiting") == 0) 
             {
-                update_task_status(current, "executing");
-                activeTasks++;
-                int pid = fork();
-                if (pid == 0) 
+                if (activeTasks < max_parallel_tasks) 
                 {
-                    execute_task(current, output_folder);
-                    exit(0);
-                } 
-                else if (pid > 0) 
-                {
-                    current->pid = pid;
-                } 
-                else 
-                {
-                    perror("Failed to fork");
+                    update_task_status(current, "executing");
+                    activeTasks++;
+                    int pid = fork();
+                    if (pid == 0) 
+                    {
+                        execute_task(current, output_folder);
+                        exit(0);
+                    } 
+                    else if (pid > 0) 
+                    {
+                        current->pid = pid;
+                    } 
+                    else 
+                    {
+                        perror("Failed to fork");
+                    }
                 }
             }
+            current = current->next;
         }
-        current = current->next;
     }
-}
 
-void handle_command(char* command, const char *output_folder, int max_parallel_tasks) 
+void handle_command(char* command, const char *output_folder, int max_parallel_tasks, const char *sched_policy) 
 {
     char *token = strtok(command, " ");
     if (strcmp(token, "execute") == 0) 
@@ -277,8 +256,9 @@ void handle_command(char* command, const char *output_folder, int max_parallel_t
         // Skip 'execute' and scheduling flags
         token = strtok(NULL, " "); // Skip 'execute'
         token = strtok(NULL, " "); // Skip '-u' or '-p'
-        token = strtok(NULL, " "); // Skip duration
-
+        new_task->estimated_time = atol(token); // Convert and store estimated time
+        printf(">>>>>>>>>time:%li\n", new_task->estimated_time); //debug
+        token = strtok(NULL, " ");
         strcpy(new_task->command, "");
         while (token != NULL) 
         {
@@ -288,28 +268,56 @@ void handle_command(char* command, const char *output_folder, int max_parallel_t
         }
         
         strcpy(new_task->status, "waiting");
-
+        
         //LIFO
         // new_task->next = head;
         //head = new_task;
         
-        //FCFS order
-        if (head == NULL) 
+        if(strcmp(sched_policy,"FCFS") == 0)
         {
-            head = new_task; // If list is empty, new task becomes head
-            new_task->next = NULL;
-        } 
-        else 
-        {
-            Task *current = head;
-            while (current->next != NULL) 
+            //FCFS order
+            if (head == NULL) 
             {
-                current = current->next; // end of list
+                head = new_task; // If list is empty, new task becomes head
+                new_task->next = NULL;
+            } 
+            else 
+            {
+                Task *current = head;
+                while (current->next != NULL) 
+                {
+                    current = current->next; // end of list
+                }
+                current->next = new_task; // Append new task at the end to maintain FCFS :)
+                new_task->next = NULL;
             }
-            current->next = new_task; // Append new task at the end to maintain FCFS :)
-            new_task->next = NULL;
         }
 
+        else if(strcmp(sched_policy,"SJF") == 0)
+        {
+        
+            // SJF: insert based on exp time
+            if (head == NULL || new_task->estimated_time < head->estimated_time) 
+            {
+                //insert on head
+                new_task->next = head;
+                head = new_task;
+            }
+            else 
+            {
+                // find where to insert
+                Task *current = head;
+                while (current->next != NULL && current->next->estimated_time <= new_task->estimated_time) 
+                {
+                    current = current->next;
+                }
+                // insert there
+                new_task->next = current->next;
+                current->next = new_task;
+            }
+
+        }
+        
         int resp_fd = open(RESP_PIPE, O_WRONLY);
         if (resp_fd == -1) 
         {
@@ -380,41 +388,18 @@ void handle_requests(const char *output_folder, const char *sched_policy, int ma
         return;
     }
 
-    if (strcmp(sched_policy, "FCFS") == 0)
-    {
-        printf("FCFS execution\n"); //debug
-     
-        char command[300];
-        while (read(req_fd, command, sizeof(command) - 1) > 0) 
-        {
-            check_child_processes(); //no blocking while waiting for child to be completed
-            dispatch_waiting_tasks(output_folder, max_parallel_tasks); //waiting to execute
-            printf(">Comando a executar: %s\n", command);
-            command[sizeof(command) - 1] = '\0'; // Ensure null-terminated
-            handle_command(command, output_folder, max_parallel_tasks);
-            memset(command, 0, sizeof(command)); // Clear buffer
-        }
 
-    }
-    else if(strcmp(sched_policy,"SJF") == 0)
+    printf("FCFS execution\n"); //debug
+    
+    char command[300];
+    while (read(req_fd, command, sizeof(command) - 1) > 0) 
     {
-        printf("SJF execution\n"); //debug
-        char command[300];
-        while (read(req_fd, command, sizeof(command) - 1) > 0) 
-        {
-            command[sizeof(command) - 1] = '\0'; // Ensure null-terminated
-            Task *next_task = find_next_sjf_task();
-            if (next_task != NULL) 
-            {
-                execute_task(next_task, output_folder);
-            }
-            memset(command, 0, sizeof(command)); // Clear buffer
-        }
-
-    }
-    else
-    {
-        printf("Sched policy not recognised. Please shutdown client...\n");
+        check_child_processes(); //no blocking while waiting for child to be completed
+        dispatch_waiting_tasks(output_folder, max_parallel_tasks); //waiting to execute
+        printf(">Comando a executar: %s\n", command);
+        command[sizeof(command) - 1] = '\0'; // Ensure null-terminated
+        handle_command(command, output_folder, max_parallel_tasks, sched_policy);
+        memset(command, 0, sizeof(command)); // Clear buffer
     }
     
     clean_up(req_fd, req_fd_write);
