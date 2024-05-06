@@ -105,8 +105,7 @@ void log_task(Task *task)
 
 void calculate_and_log_duration(struct timeval start, struct timeval end, Task *task)
 {
-    //func to calculate time. Adapt code.
-    //not used for now
+    //func to calculate time.
     long duration = (end.tv_sec - start.tv_sec) * 1000;
     duration += (end.tv_usec - start.tv_usec) / 1000;
     task->exec_time = duration;
@@ -165,18 +164,17 @@ void execute_task(Task *task, const char *output_folder)
 {
     if (task == NULL) return;
     printf("Starting execution of task: %d\n", task->id);
-    
+
     struct timeval end_time;
-    
-    char output_file_name[64]; //required to send stdout e perror to text file with task id
+    char output_file_name[64];
 
     gettimeofday(&task->start_time, NULL); // Start time
 
     int pid = fork();
     if (pid == 0) 
-    { 
+    {
         // Child process: redirect stdout and stderr
-        snprintf(output_file_name, sizeof(output_file_name), "../%s/task_output_%d.log",output_folder, task->id);
+        snprintf(output_file_name, sizeof(output_file_name), "../%s/task_output_%d.log", output_folder, task->id); //podemos usar?
         int out_fd = open(output_file_name, O_WRONLY | O_CREAT | O_TRUNC, 0666);
         if (out_fd == -1) 
         {
@@ -186,8 +184,19 @@ void execute_task(Task *task, const char *output_folder)
         dup2(out_fd, STDOUT_FILENO);
         dup2(out_fd, STDERR_FILENO);
         close(out_fd);
-        execlp("/bin/sh", "sh", "-c", task->command, NULL);
-        perror("execlp failed");
+
+        char *args[100]; // max 99 argumentos
+        int argc = 0;
+        char *token = strtok(task->command, " ");
+        while (token != NULL && argc < 99) 
+        {
+            args[argc++] = token;
+            token = strtok(NULL, " ");
+        }
+        args[argc] = NULL; // Último elemento deve ser NULL para execvp
+
+        execvp(args[0], args);
+        perror("execvp failed");
         exit(EXIT_FAILURE);
     } 
     else if (pid > 0) 
@@ -422,8 +431,8 @@ int main(int argc, char* argv[])
     }
 
     const char *output_folder = argv[1];
-    int max_parallel_tasks = atoi(argv[2]); // Converte o número de tarefas paralelas para int -> not used
-    const char *sched_policy = argv[3]; //-> not used
+    int max_parallel_tasks = atoi(argv[2]); // Converte o número de tarefas paralelas para int
+    const char *sched_policy = argv[3];
     
     setup_pipes(); // should we be doing mkfifo for both pipes here?
     handle_requests(output_folder, sched_policy, max_parallel_tasks);

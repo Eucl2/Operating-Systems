@@ -18,6 +18,7 @@ Mais informações no enunciado do projeto
 
 #### Erros:
 
+* ❗Exec está a usar a shell! Alterar! ✔️
 * Status não mostra o tempo nas tasks completed. -> acontece porque o tempo está apenas a ser calculado no processo filho
 * Se o primeiro pedido for um execute, o comando é recebido de forma desformatada ✔️
 
