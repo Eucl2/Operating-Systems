@@ -268,12 +268,14 @@ void handle_command(char* command, const char *output_folder, int max_parallel_t
         }
         
         strcpy(new_task->status, "waiting");
+
+        if(strcmp(sched_policy,"LIFO") == 0)
+        {
+            new_task->next = head;
+            head = new_task;
+        }
         
-        //LIFO
-        // new_task->next = head;
-        //head = new_task;
-        
-        if(strcmp(sched_policy,"FCFS") == 0)
+        else if(strcmp(sched_policy,"FCFS") == 0)
         {
             //FCFS order
             if (head == NULL) 
@@ -316,6 +318,11 @@ void handle_command(char* command, const char *output_folder, int max_parallel_t
                 current->next = new_task;
             }
 
+        }
+        else
+        {
+            perror("Sched policy not supported\n");
+            return;
         }
         
         int resp_fd = open(RESP_PIPE, O_WRONLY);
@@ -387,9 +394,6 @@ void handle_requests(const char *output_folder, const char *sched_policy, int ma
         perror("Failed to open request or response pipe");
         return;
     }
-
-
-    printf("FCFS execution\n"); //debug
     
     char command[300];
     while (read(req_fd, command, sizeof(command) - 1) > 0) 
