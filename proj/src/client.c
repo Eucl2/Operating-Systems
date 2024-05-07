@@ -6,7 +6,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX_ARGS 20 //to review
 #define REQ_PIPE "client_to_orchestrator"
 #define RESP_PIPE "orchestrator_to_client"
 
@@ -26,11 +25,11 @@ void send_request(char* command)
     char output_message[128];
     if (command != NULL) 
     {
-        printf("Sending [ %s ] request to orchestrator... \n", command); //debugging
+        // printf("Sending [ %s ] request to orchestrator... \n", command); //debugging
     } 
     else 
     {
-        printf("Error: Command is NULL\n"); //debugging
+        // printf("Error: Command is NULL\n"); //debugging
     }
     int fd_req, fd_resp;
     char task_id[100] = {0};

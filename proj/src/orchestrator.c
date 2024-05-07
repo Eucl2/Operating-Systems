@@ -105,11 +105,22 @@ void log_task(Task *task)
 }
 
 void calculate_and_log_duration(struct timeval start, struct timeval end, Task *task)
+//void calculate_and_log_duration(struct timeval start, struct timeval end, Task *task, int pipe_write_fd)
 {
     //func to calculate time.
     long duration = (end.tv_sec - start.tv_sec) * 1000;
     duration += (end.tv_usec - start.tv_usec) / 1000;
     task->exec_time = duration;
+    
+    // ssize_t bytes_written = write (pipe_write_fd, &duration, sizeof(long));
+    
+    // if (bytes_written == -1) 
+    // {
+    //     perror("Erro a escrever na pipe");
+    //     exit(EXIT_FAILURE);
+    // }
+    // close(pipe_write_fd);
+
     log_task(task);  // Log
 }
 
@@ -162,6 +173,7 @@ void write_status_to_client(int fd)
 }
 
 void execute_task(Task *task, const char *output_folder) 
+//void execute_task(Task *task, const char *output_folder, int pipe_write) 
 {
     if (task == NULL) return;
     printf("Starting execution of task: %d\n", task->id);
@@ -208,6 +220,7 @@ void execute_task(Task *task, const char *output_folder)
         gettimeofday(&end_time, NULL); // End time
 
         calculate_and_log_duration(task->start_time, end_time, task);
+        //calculate_and_log_duration(task->start_time, end_time, task, pipe_write);
   
         printf("Task %d completed.\n", task->id);
     } 
@@ -321,12 +334,27 @@ void dispatch_waiting_tasks(const char *output_folder, int max_parallel_tasks)
                 {
                     update_task_status(current, "executing");
                     activeTasks++;
+
+                    //
+                    // int fds[2];
+                    // int return_pipe = pipe(fds);
+
+                    // if (return_pipe == -1) 
+                    // {
+                    //     perror("Erro a criar pipes");
+                    //     exit(EXIT_FAILURE);
+                    // }
+
+                    // printf("PIPE: [0] = %d; [1] = %d\n", fds[0], fds[1]);
+
                     int pid = fork();
                     if (pid == 0) 
                     {
+                        //close(fds[0]);
                         if (strcmp(current->flag, "-u") == 0) 
                         {
                             execute_task(current, output_folder);
+                            //execute_task(current, output_folder,fds[1]);
                             exit(0);
                         }
                         else if (strcmp(current->flag, "-p") == 0) 
@@ -337,6 +365,18 @@ void dispatch_waiting_tasks(const char *output_folder, int max_parallel_tasks)
                     } 
                     else if (pid > 0) 
                     {
+                        //close(fds[1]);
+                        // long value = 0;
+
+                        // ssize_t bytes_read = read(fds[0], &value, sizeof(long));
+                        // if (bytes_read == -1) 
+                        // {
+                        //     perror("Erro a ler da pipe");
+                        //     exit(EXIT_FAILURE);
+                        // }
+                        // close(fds[0]);
+
+                        // current->exec_time = value;
                         current->pid = pid;
                     } 
                     else 
@@ -452,15 +492,30 @@ void handle_command(char* command, const char *output_folder, int max_parallel_t
             update_task_status(new_task, "executing");
             activeTasks++;  // Incrementar o contador de tarefas ativas
 
+            
+            // int fds[2];
+            // int return_pipe = pipe(fds);
+
+            // if (return_pipe == -1) 
+            // {
+            //     perror("Erro a criar pipes");
+            //     exit(EXIT_FAILURE);
+            // }
+
+            // printf("PIPE: [0] = %d; [1] = %d\n", fds[0], fds[1]);
+
             // Fork a process to execute the task
             int pid = fork();
             
             if (pid == 0) 
             {
+                //close(fds[0]);
+
                 if (strcmp(new_task->flag, "-u") == 0)
                 {
                 //child process to execute
                 execute_task(new_task, output_folder);
+                //execute_task(new_task, output_folder,fds[1]);
                 exit(0);  // Garante que o processo filho termine após a execução da tarefa
                 }
 
@@ -472,7 +527,20 @@ void handle_command(char* command, const char *output_folder, int max_parallel_t
             } 
             else if (pid > 0) 
             {
-                new_task->pid = pid; //so that we can later access the tasks that...hmmm.... are waiting :)
+                // //close(fds[1]);
+                // long value = 0;
+
+                // ssize_t bytes_read = read(fds[0], &value, sizeof(long));
+                // if (bytes_read == -1) 
+                // {
+                //     perror("Erro a ler da pipe");
+                //     exit(EXIT_FAILURE);
+                // }
+                // close(fds[0]);
+
+                // new_task->exec_time = value;
+
+                new_task->pid = pid; //so that we can later access the tasks that are waiting :)
             } 
             else 
             {
