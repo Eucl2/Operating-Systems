@@ -31,12 +31,13 @@ void send_request(char* command)
     {
         // printf("Error: Command is NULL\n"); //debugging
     }
+
     int fd_req, fd_resp;
     char task_id[100] = {0};
 
     if ((fd_req = open(REQ_PIPE, O_WRONLY)) == -1) 
     {
-        perror("Server offline - cannot open request pipe");
+        perror("Server offline. Cannot open request pipe");
         exit(1);
     }
     if (write(fd_req, command, strlen(command)) == -1) 
