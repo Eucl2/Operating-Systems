@@ -74,7 +74,6 @@ void send_request(char* command)
 
 void read_status() 
 {
-    printf("Reading status from orchestrator...\n\n"); //debugging
     int fd_resp = open(RESP_PIPE, O_RDONLY);
 
     if (fd_resp == -1) 
@@ -95,8 +94,8 @@ void read_status()
             response[total_read] = '\0';  // Garantir terminação da string
             if (strstr(response, "END")) 
             {
-                *strstr(response, "END") = '\0'; // Substitui "END" por /0 na response. Desta forma desaparece do output
-                break;  // Sair do loop quando "END" for recebido
+                *strstr(response, "END") = '\0';
+                break;
             }
         } 
         else if (count == 0) 
@@ -128,7 +127,6 @@ int main(int argc, char* argv[])
 
     if (strcmp(argv[1], "shutdown") == 0) 
     {
-        printf ("Detetado pedido de shutdown. A enviar para o orchestrator...\n"); //debug
         send_request(argv[1]);
     } 
 
@@ -139,8 +137,6 @@ int main(int argc, char* argv[])
             write(STDOUT_FILENO, "Insufficient arguments for execute.\n", 36);
             return 1;
         }
-
-        // Check if argv[2] (aka duration) is a valid integer - Useless??
         
         if (!is_integer(argv[2])) 
         {
@@ -152,12 +148,11 @@ int main(int argc, char* argv[])
 
         // Construct the full command to send to the server
         strcat(full_command, "execute ");
-        strcat(full_command, argv[3]); // -u or -p
+        strcat(full_command, argv[3]);
         strcat(full_command, " ");
-        strcat(full_command, argv[2]); // duration
+        strcat(full_command, argv[2]);
         strcat(full_command, " ");
 
-        // Concatenate all program and args
         for (int i = 4; i < argc; i++) 
         {
             strcat(full_command, argv[i]);

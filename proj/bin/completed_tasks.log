@@ -1,0 +1,168 @@
+Task ID 1 completed. Command: ../tests/hello 8 , Execution Time: 9408 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3647 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3627 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3730 ms
+Task ID 3 completed. Command: ../tests/hello 3 , Execution Time: 3718 ms
+Task ID 4 completed. Command: ../tests/hello 3 , Execution Time: 3705 ms
+Task ID 5 completed. Command: ../tests/hello 3 , Execution Time: 3700 ms
+Task ID 6 completed. Command: ../tests/hello 3 , Execution Time: 3701 ms
+Task ID 7 completed. Command: ../tests/hello 3 , Execution Time: 3700 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3832 ms
+Task ID 2 completed. Command: ../tests/hello 3 | grep 1 , Execution Time: 1 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3609 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3661 ms
+Task ID 3 completed. Command: ../tests/hello 3 , Execution Time: 3631 ms
+Task ID 4 completed. Command: ../tests/hello 3 , Execution Time: 3628 ms
+Task ID 6 completed. Command: ../tests/hello 3 , Execution Time: 3732 ms
+Task ID 5 completed. Command: ../tests/hello 3 , Execution Time: 3740 ms
+Task ID 7 completed. Command: ../tests/hello 3 , Execution Time: 3768 ms
+Task ID 8 completed. Command: ../tests/hello 3 | grep 1 , Execution Time: 2 ms
+Task ID 9 completed. Command: ../tests/hello 3 | grep 1 , Execution Time: 3856 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3304 ms
+Task ID 2 completed. Command: ../tests/void 15 , Execution Time: 15000 ms
+Task ID 3 completed. Command: ../tests/void 15 , Execution Time: 15000 ms
+Task ID 4 completed. Command: ../tests/void 15 , Execution Time: 15000 ms
+Task ID 7 completed. Command: ../tests/hello 3 , Execution Time: 3289 ms
+Task ID 6 completed. Command: ../tests/void 15 , Execution Time: 15000 ms
+Task ID 5 completed. Command: ../tests/void 15 , Execution Time: 15000 ms
+Task ID 8 completed. Command: ../tests/void 30 , Execution Time: 30001 ms
+Task ID 9 completed. Command: ../tests/void 30 , Execution Time: 30000 ms
+Task ID 10 completed. Command: ../tests/void 30 , Execution Time: 30000 ms
+Task ID 13 completed. Command: ../tests/hello 3 , Execution Time: 3287 ms
+Task ID 14 completed. Command: ../tests/hello 3 | grep 200 , Execution Time: 3302 ms
+Task ID 12 completed. Command: ../tests/void 30 , Execution Time: 30000 ms
+Task ID 11 completed. Command: ../tests/void 30 , Execution Time: 30000 ms
+Task ID 1 completed. Command: ../tests/hello 3 | grep 200 , Execution Time: 3300 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3286 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3289 ms
+Task ID 3 completed. Command: ../tests/hello 3 , Execution Time: 3289 ms
+Task ID 5 completed. Command: ../tests/hello 3 , Execution Time: 3298 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3292 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3294 ms
+Task ID 3 completed. Command: ../tests/hello 3 , Execution Time: 3293 ms
+Task ID 4 completed. Command: ../tests/hello 3 , Execution Time: 3287 ms
+Task ID 6 completed. Command: ../tests/hello 3 , Execution Time: 3285 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3286 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3289 ms
+Task ID 3 completed. Command: ../tests/hello 3 , Execution Time: 3286 ms
+Task ID 4 completed. Command: ../tests/hello 3 , Execution Time: 3275 ms
+Task ID 5 completed. Command: ../tests/hello 3 , Execution Time: 3282 ms
+Task ID 6 completed. Command: ../tests/hello 3 , Execution Time: 3283 ms
+Task ID 7 completed. Command: ../tests/hello 3 , Execution Time: 3278 ms
+Task ID 8 completed. Command: ../tests/hello 3 , Execution Time: 3279 ms
+Task ID 9 completed. Command: ../tests/hello 3 , Execution Time: 3281 ms
+Task ID 10 completed. Command: ../tests/hello 3 , Execution Time: 3272 ms
+Task ID 12 completed. Command: ../tests/hello 3 , Execution Time: 3272 ms
+Task ID 11 completed. Command: ../tests/hello 3 , Execution Time: 3280 ms
+Task ID 15 completed. Command: ../tests/hello 3 , Execution Time: 3282 ms
+Task ID 14 completed. Command: ../tests/hello 3 , Execution Time: 3289 ms
+Task ID 13 completed. Command: ../tests/hello 3 , Execution Time: 3289 ms
+Task ID 17 completed. Command: ../tests/hello 3 , Execution Time: 3285 ms
+Task ID 16 completed. Command: ../tests/hello 3 , Execution Time: 3287 ms
+Task ID 18 completed. Command: ../tests/hello 3 , Execution Time: 3290 ms
+Task ID 20 completed. Command: ../tests/hello 3 , Execution Time: 3288 ms
+Task ID 19 completed. Command: ../tests/hello 3 , Execution Time: 3290 ms
+Task ID 21 completed. Command: ../tests/hello 3 , Execution Time: 3291 ms
+Task ID 23 completed. Command: ../tests/hello 3 , Execution Time: 3265 ms
+Task ID 24 completed. Command: ../tests/hello 3 , Execution Time: 3267 ms
+Task ID 22 completed. Command: ../tests/hello 3 , Execution Time: 3270 ms
+Task ID 25 completed. Command: ../tests/hello 3 , Execution Time: 3304 ms
+Task ID 1 completed. Command: ../tests/void 36 , Execution Time: 36010 ms
+Task ID 2 completed. Command: ../tests/void 36 , Execution Time: 36000 ms
+Task ID 3 completed. Command: ../tests/void 36 , Execution Time: 36001 ms
+Task ID 4 completed. Command: ../tests/void 36 , Execution Time: 36001 ms
+Task ID 6 completed. Command: ../tests/void 36 , Execution Time: 36000 ms
+Task ID 5 completed. Command: ../tests/void 36 , Execution Time: 36000 ms
+Task ID 7 completed. Command: ../tests/void 36 , Execution Time: 36001 ms
+Task ID 9 completed. Command: ../tests/void 36 , Execution Time: 36001 ms
+Task ID 8 completed. Command: ../tests/void 36 , Execution Time: 36001 ms
+Task ID 1 completed. Command: ../tests/void 20 , Execution Time: 20001 ms
+Task ID 2 completed. Command: ../tests/void 20 , Execution Time: 20000 ms
+Task ID 3 completed. Command: ../tests/void 20 , Execution Time: 20000 ms
+Task ID 4 completed. Command: ../tests/void 20 , Execution Time: 20000 ms
+Task ID 5 completed. Command: ../tests/void 20 , Execution Time: 20000 ms
+Task ID 6 completed. Command: ../tests/void 20 , Execution Time: 20000 ms
+Task ID 7 completed. Command: ../tests/void 20 , Execution Time: 20001 ms
+Task ID 8 completed. Command: ../tests/void 20 , Execution Time: 20001 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3305 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3498 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 1715109188896 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3498 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3470 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3501 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3524 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3497 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3501 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3505 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3492 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3474 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3472 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3313 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3330 ms
+Task ID 3 completed. Command: ../tests/hello 3 , Execution Time: 3326 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3357 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3354 ms
+Task ID 3 completed. Command: ../tests/hello 3 , Execution Time: 3368 ms
+Task ID 4 completed. Command: ../tests/hello 3 , Execution Time: 3341 ms
+Task ID 5 completed. Command: ../tests/hello 3 , Execution Time: 3337 ms
+Task ID 6 completed. Command: ../tests/hello 3 , Execution Time: 3326 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3331 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3325 ms
+Task ID 3 completed. Command: ../tests/hello 3 , Execution Time: 3328 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3286 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3278 ms
+Task ID 3 completed. Command: ../tests/hello 3 , Execution Time: 3282 ms
+Task ID 4 completed. Command: ../tests/hello 3 , Execution Time: 3282 ms
+Task ID 5 completed. Command: ../tests/hello 3 , Execution Time: 3278 ms
+Task ID 6 completed. Command: ../tests/hello 3 , Execution Time: 3281 ms
+Task ID 7 completed. Command: ../tests/hello 3 , Execution Time: 3277 ms
+Task ID 9 completed. Command: ../tests/hello 3 , Execution Time: 3284 ms
+Task ID 8 completed. Command: ../tests/hello 3 , Execution Time: 3284 ms
+Task ID 10 completed. Command: ../tests/hello 3 , Execution Time: 3296 ms
+Task ID 11 completed. Command: ../tests/void 20 , Execution Time: 20000 ms
+Task ID 12 completed. Command: ../tests/void 20 , Execution Time: 20001 ms
+Task ID 13 completed. Command: ../tests/void 20 , Execution Time: 20000 ms
+Task ID 18 completed. Command: ../tests/hello 3 , Execution Time: 3286 ms
+Task ID 14 completed. Command: ../tests/void 20 , Execution Time: 20000 ms
+Task ID 15 completed. Command: ../tests/void 20 , Execution Time: 20000 ms
+Task ID 16 completed. Command: ../tests/void 20 , Execution Time: 20000 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3280 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3276 ms
+Task ID 3 completed. Command: ../tests/hello 3 , Execution Time: 3285 ms
+Task ID 5 completed. Command: ../tests/hello 3 , Execution Time: 3277 ms
+Task ID 6 completed. Command: ../tests/hello 3 , Execution Time: 3285 ms
+Task ID 4 completed. Command: ../tests/hello 3 , Execution Time: 3285 ms
+Task ID 9 completed. Command: ../tests/void 20 , Execution Time: 20000 ms
+Task ID 8 completed. Command: ../tests/void 20 , Execution Time: 20000 ms
+Task ID 7 completed. Command: ../tests/void 20 , Execution Time: 20000 ms
+Task ID 1 completed. Command: ../tests/hello 3 | grep 1 , Execution Time: 0 ms
+Task ID 2 completed. Command: ../tests/hello 3 | grep 1 , Execution Time: 1 ms
+Task ID 3 completed. Command: ../tests/hello 30 | grep 20 , Execution Time: 0 ms
+Task ID 4 completed. Command: ../tests/hello 30 | grep 20 , Execution Time: 32762 ms
+Task ID 5 completed. Command: ../tests/hello 3 , Execution Time: 3285 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3280 ms
+Task ID 2 completed. Command: ../tests/hello 30 | grep 20 , Execution Time: 32741 ms
+Task ID 1 completed. Command: ../tests/hello 30 | grep 20 , Execution Time: 32736 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3274 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3284 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3258 ms
+Task ID 3 completed. Command: ../tests/hello 3 , Execution Time: 3262 ms
+Task ID 4 completed. Command: ../tests/hello 3 , Execution Time: 3265 ms
+Task ID 6 completed. Command: ../tests/hello 3 , Execution Time: 3274 ms
+Task ID 7 completed. Command: ../tests/hello 3 , Execution Time: 3277 ms
+Task ID 5 completed. Command: ../tests/hello 3 , Execution Time: 3278 ms
+Task ID 8 completed. Command: ../tests/hello 3 , Execution Time: 3273 ms
+Task ID 10 completed. Command: ../tests/hello 3 , Execution Time: 3279 ms
+Task ID 9 completed. Command: ../tests/hello 3 , Execution Time: 3281 ms
+Task ID 11 completed. Command: ../tests/hello 3 , Execution Time: 3280 ms
+Task ID 1 completed. Command: ../tests/hello 3 , Execution Time: 3280 ms
+Task ID 2 completed. Command: ../tests/hello 3 , Execution Time: 3286 ms
+Task ID 3 completed. Command: ../tests/hello 3 , Execution Time: 3276 ms
+Task ID 4 completed. Command: ../tests/hello 3 , Execution Time: 3275 ms
+Task ID 5 completed. Command: ../tests/hello 3 , Execution Time: 3276 ms
+Task ID 1 completed. Command: ../tests/hello 30 | grep 20 , Execution Time: 32705 ms
+Task ID 2 completed. Command: ../tests/hello 30 | grep 20 , Execution Time: 32714 ms
+Task ID 3 completed. Command: ../tests/hello 30 | grep 20 , Execution Time: 32712 ms
+Task ID 5 completed. Command: ../tests/hello 30 | grep 20 , Execution Time: 32579 ms
+Task ID 6 completed. Command: ../tests/hello 30 | grep 20 , Execution Time: 32586 ms
+Task ID 4 completed. Command: ../tests/hello 30 | grep 20 , Execution Time: 32608 ms
