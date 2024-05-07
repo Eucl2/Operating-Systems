@@ -35,7 +35,7 @@ Mais informações no enunciado do projeto
 
 #### Falta:
 
-* Pipelines no orchestrator
+* Pipelines no orchestrator ✔️
 
 * Implementar sjf - comparar resultados com o FCFS ✔️ -> implementado. Comparar no relatorio os resultados que observamos
 * Orchestrator tem que receber os argumentos ✔️ -> parallel tasks e sched_policy não estão a ser usadas

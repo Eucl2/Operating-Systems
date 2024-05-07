@@ -16,6 +16,7 @@ typedef struct task {
     int id;
     pid_t pid; //for waiting tasks.
     char command[256];
+    char flag[3]; //-u or -p
     char status[20];  // "waiting", "executing", "completed."
     long exec_time; // Real execution time in milliseconds
     long estimated_time; // Estimated time in milliseconds provided by the user when requests exec
@@ -25,7 +26,7 @@ typedef struct task {
 
 Task* head = NULL;  // Head of the linked list for task queue
 int taskCounter = 1;  // Task ID counter
-int activeTasks = 0;  // Global counter for active tasks -> still not used
+int activeTasks = 0;  // Global counter for active tasks
 
 
 Task* find_task_by_pid(pid_t pid) 
@@ -128,7 +129,7 @@ void write_status_to_client(int fd)
         printf("STATUS: %s : %s\n", current->command, current->status ); //debug
         if (strcmp(current->status, "executing") == 0) 
         {
-            len = snprintf(line, sizeof(line), "%d %s\n", current->id, current->command); //should be using write() ?
+            len = snprintf(line, sizeof(line), "%d %s\n", current->id, current->command);
             write(fd, line, len);
         }
     }
@@ -139,7 +140,7 @@ void write_status_to_client(int fd)
     {
         if (strcmp(current->status, "waiting") == 0) 
         {
-            len = snprintf(line, sizeof(line), "%d %s\n", current->id, current->command); //should be using write() ?
+            len = snprintf(line, sizeof(line), "%d %s\n", current->id, current->command);
             write(fd, line, len);
         }
     }
@@ -174,7 +175,7 @@ void execute_task(Task *task, const char *output_folder)
     if (pid == 0) 
     {
         // Child process: redirect stdout and stderr
-        snprintf(output_file_name, sizeof(output_file_name), "../%s/task_output_%d.log", output_folder, task->id); //podemos usar?
+        snprintf(output_file_name, sizeof(output_file_name), "../%s/task_output_%d.log", output_folder, task->id);
         int out_fd = open(output_file_name, O_WRONLY | O_CREAT | O_TRUNC, 0666);
         if (out_fd == -1) 
         {
@@ -209,12 +210,103 @@ void execute_task(Task *task, const char *output_folder)
         calculate_and_log_duration(task->start_time, end_time, task);
   
         printf("Task %d completed.\n", task->id);
-        //update_task_status(task, "completed");
     } 
     else 
     {
         perror("Failed to fork");
     }
+}
+
+void execute_pipeline_task(Task *task, const char *output_folder) 
+{
+    if (task == NULL) return;
+
+    // Parse the command to count the number of commands in the pipeline
+    int num_cmds = 0;
+    char *cmds[100];
+    char *command_copy = strdup(task->command);
+    char *token = strtok(command_copy, "|");
+    while (token != NULL && num_cmds < 99) 
+    {
+        cmds[num_cmds++] = strdup(token);
+        token = strtok(NULL, "|");
+    }
+    cmds[num_cmds] = NULL;
+    free(command_copy);
+
+    // Array to hold pipe file descriptors
+    int pipes[num_cmds-1][2];
+    pid_t pids[num_cmds];
+    struct timeval inicio, fim;
+
+    gettimeofday(&inicio, NULL);  // Start time
+
+    for (int i = 0; i < num_cmds; i++) {
+        if (i < num_cmds - 1) {
+            pipe(pipes[i]);
+        }
+
+        pids[i] = fork();
+        if (pids[i] == 0) { // Child process
+            if (i > 0) 
+            {  // Not the first command
+                dup2(pipes[i-1][0], 0); // Set input from the previous output
+                close(pipes[i-1][0]);
+                close(pipes[i-1][1]);
+            }
+
+            if (i < num_cmds - 1) 
+            {  // Not the last command
+                close(pipes[i][0]);
+                dup2(pipes[i][1], 1);  // Set output to the next input
+                close(pipes[i][1]);
+            } 
+            else 
+            {  // Last command
+                char output_file_name[64];
+                snprintf(output_file_name, sizeof(output_file_name), "../%s/task_output_%d.log", output_folder, task->id);
+                int out_fd = open(output_file_name, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                dup2(out_fd, 1);  // Redirect output to file
+                close(out_fd);
+            }
+
+            char *args[100];
+            int argc = 0;
+            char *arg_token = strtok(cmds[i], " ");
+            while (arg_token != NULL && argc < 99) 
+            {
+                args[argc++] = arg_token;
+                arg_token = strtok(NULL, " ");
+            }
+            args[argc] = NULL;
+            execvp(args[0], args);
+            perror("execvp failed");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // Close all pipes in the parent
+    for (int i = 0; i < num_cmds - 1; i++) 
+    {
+        close(pipes[i][0]);
+        close(pipes[i][1]);
+    }
+
+    // Wait for all child processes to finish
+    int status;
+    for (int i = 0; i < num_cmds; i++) 
+    {
+        waitpid(pids[i], &status, 0);
+    }
+
+    gettimeofday(&fim, NULL);  // End time
+    long long tempo = (fim.tv_sec - inicio.tv_sec) * 1000;
+    tempo += (fim.tv_usec - inicio.tv_usec) / 1000;
+    printf("Ended in %lld ms\n", tempo);
+
+    // Update task execution time
+    task->exec_time = tempo;
+    log_task(task);  // Log task execution
 }
 
 void dispatch_waiting_tasks(const char *output_folder, int max_parallel_tasks)
@@ -232,8 +324,16 @@ void dispatch_waiting_tasks(const char *output_folder, int max_parallel_tasks)
                     int pid = fork();
                     if (pid == 0) 
                     {
-                        execute_task(current, output_folder);
-                        exit(0);
+                        if (strcmp(current->flag, "-u") == 0) 
+                        {
+                            execute_task(current, output_folder);
+                            exit(0);
+                        }
+                        else if (strcmp(current->flag, "-p") == 0) 
+                        {
+                            execute_pipeline_task(current, output_folder);
+                            exit(0);
+                        }
                     } 
                     else if (pid > 0) 
                     {
@@ -262,11 +362,13 @@ void handle_command(char* command, const char *output_folder, int max_parallel_t
         }
         new_task->id = taskCounter++;  // Allocate ID in parent
 
-        // Skip 'execute' and scheduling flags
         token = strtok(NULL, " "); // Skip 'execute'
-        token = strtok(NULL, " "); // Skip '-u' or '-p'
-        new_task->estimated_time = atol(token); // Convert and store estimated time
-        printf(">>>>>>>>>time:%li\n", new_task->estimated_time); //debug
+        strcpy(new_task->flag, token); // Store '-u' or '-p'
+        
+        token = strtok(NULL, " "); // Read estimated time
+        new_task->estimated_time = atol(token);
+        printf("time: %ld ms, Type: %s\n", new_task->estimated_time, new_task->flag); // Debug info
+        
         token = strtok(NULL, " ");
         strcpy(new_task->command, "");
         while (token != NULL) 
@@ -355,9 +457,18 @@ void handle_command(char* command, const char *output_folder, int max_parallel_t
             
             if (pid == 0) 
             {
+                if (strcmp(new_task->flag, "-u") == 0)
+                {
                 //child process to execute
                 execute_task(new_task, output_folder);
                 exit(0);  // Garante que o processo filho termine após a execução da tarefa
+                }
+
+                else if (strcmp(new_task->flag, "-p") == 0) 
+                {
+                    execute_pipeline_task(new_task, output_folder);
+                    exit(0);
+                }
             } 
             else if (pid > 0) 
             {
@@ -385,7 +496,7 @@ void handle_command(char* command, const char *output_folder, int max_parallel_t
     else if (strcmp(token, "shutdown") == 0) 
     {
         printf("Shutting down orchestrator...\n");
-        clean_up(-1, -1);  // ????????????????? passar os fd?
+        clean_up(-1, -1);  // ????????????????? passar os fd? !!!!!!!!!!!!!!!!!!!!!!!!!!
         exit(0);
     }
 }
